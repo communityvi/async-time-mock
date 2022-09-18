@@ -1,0 +1,58 @@
+name: async-time-mock
+on: push
+env:
+    CARGO_TERM_COLOR: always
+jobs:
+    check:
+        name: Check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Install rust toolchain
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  default: true
+            - uses: Swatinem/rust-cache@v1
+            - name: Check
+              run: cargo check --tests
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Install rust toolchain
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  default: true
+                  components: clippy, rustfmt
+            - uses: Swatinem/rust-cache@v1
+            - name: Check formatting
+              run: cargo fmt --all -- --check
+            - uses: actions-rs/clippy-check@v1
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  args: --all-features
+    test:
+        name: Test
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ ubuntu-latest, windows-latest, macos-latest ]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Install rust toolchain
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  default: true
+                  components: clippy, rustfmt
+            - uses: Swatinem/rust-cache@v1
+            - name: Build
+              run: cargo build
+            - name: Run tests
+              run: cargo test
