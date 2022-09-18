@@ -1,7 +1,13 @@
 [package]
 name = "async-time-mock"
+description = "Mockable time for use in async runtimes (only tokio for now)."
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+authors = [
+	"Max Bruckner",
+	"Thomas Keppler",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
