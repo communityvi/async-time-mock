@@ -10,7 +10,7 @@ pub struct TimerRegistry {
 	current_time: RwLock<Duration>,
 	timers_by_time: RwLock<TimersByTime>,
 	any_timer_scheduled_signal: broadcast::Sender<()>,
-	advance_time_lock: tokio::sync::Mutex<()>,
+	advance_time_lock: async_lock::Mutex<()>,
 }
 
 impl Default for TimerRegistry {
