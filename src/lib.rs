@@ -1,14 +1,5 @@
-pub fn add(left: usize, right: usize) -> usize {
-	left + right
-}
+mod time_handler_guard;
+mod timer_registry;
 
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn it_works() {
-		let result = add(2, 2);
-		assert_eq!(result, 4);
-	}
-}
+pub use time_handler_guard::TimeHandlerGuard;
+pub use timer_registry::TimerRegistry;
