@@ -14,5 +14,5 @@ async-lock = "2"
 event-listener = "2"
 
 [dev-dependencies]
-futures-lite = {version = "1", default-features = false}
-tokio = {version = "1", features = ["rt", "macros"]}
+async-executor = "1"
+futures-lite = "1"

@@ -55,44 +55,48 @@ impl TimerListener {
 mod test {
 	use super::*;
 	use futures_lite::future::poll_once;
-	use futures_lite::pin;
+	use futures_lite::{future, pin};
 
-	#[tokio::test]
-	async fn timer_should_trigger_timer_listener() {
-		let (timer, listener) = Timer::new();
+	#[test]
+	fn timer_should_trigger_timer_listener() {
+		future::block_on(async {
+			let (timer, listener) = Timer::new();
 
-		let wait_until_triggered = listener.wait_until_triggered();
-		pin!(wait_until_triggered);
-		assert!(
-			poll_once(wait_until_triggered.as_mut()).await.is_none(),
-			"Future should have been pending before the timer is triggered",
-		);
-		let _ = timer.trigger();
+			let wait_until_triggered = listener.wait_until_triggered();
+			pin!(wait_until_triggered);
+			assert!(
+				poll_once(wait_until_triggered.as_mut()).await.is_none(),
+				"Future should have been pending before the timer is triggered",
+			);
+			let _ = timer.trigger();
 
-		assert!(
-			poll_once(wait_until_triggered.as_mut()).await.is_some(),
-			"Future should have been ready after timer was triggered"
-		);
+			assert!(
+				poll_once(wait_until_triggered.as_mut()).await.is_some(),
+				"Future should have been ready after timer was triggered"
+			);
+		});
 	}
 
-	#[tokio::test]
-	async fn time_handler_finished_should_be_triggered_by_time_handler_completion() {
-		let (timer, listener) = Timer::new();
+	#[test]
+	fn time_handler_finished_should_be_triggered_by_time_handler_completion() {
+		future::block_on(async {
+			let (timer, listener) = Timer::new();
 
-		let time_handler_finished = timer.trigger();
-		let time_handler_guard = listener.wait_until_triggered().await;
+			let time_handler_finished = timer.trigger();
+			let time_handler_guard = listener.wait_until_triggered().await;
 
-		let waiter = time_handler_finished.wait();
-		pin!(waiter);
-		assert!(
-			poll_once(waiter.as_mut()).await.is_none(),
-			"Future should have been pending before the time handler is finished (guard dropped)",
-		);
+			let waiter = time_handler_finished.wait();
+			pin!(waiter);
+			assert!(
+				poll_once(waiter.as_mut()).await.is_none(),
+				"Future should have been pending before the time handler is finished (guard dropped)",
+			);
 
-		drop(time_handler_guard);
-		assert!(
-			poll_once(waiter.as_mut()).await.is_some(),
-			"Future should have been ready after the time handler is finished (guard dropped)",
-		);
+			drop(time_handler_guard);
+			assert!(
+				poll_once(waiter.as_mut()).await.is_some(),
+				"Future should have been ready after the time handler is finished (guard dropped)",
+			);
+		});
 	}
 }
