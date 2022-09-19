@@ -1,28 +1,18 @@
 use crate::time_handler_guard::TimeHandlerGuard;
+use event_listener::Event;
 use std::collections::{BTreeMap, VecDeque};
 use std::sync::{RwLock, RwLockWriteGuard};
 use std::time::Duration;
-use tokio::sync::{broadcast, oneshot};
+use tokio::sync::oneshot;
 
 type TimersByTime = BTreeMap<Duration, VecDeque<oneshot::Sender<TimeHandlerGuard>>>;
 
+#[derive(Default)]
 pub struct TimerRegistry {
 	current_time: RwLock<Duration>,
 	timers_by_time: RwLock<TimersByTime>,
-	any_timer_scheduled_signal: broadcast::Sender<()>,
+	any_timer_scheduled_signal: Event,
 	advance_time_lock: async_lock::Mutex<()>,
-}
-
-impl Default for TimerRegistry {
-	fn default() -> Self {
-		let (any_timer_scheduled_signal, _) = broadcast::channel(1);
-		Self {
-			current_time: Default::default(),
-			timers_by_time: Default::default(),
-			any_timer_scheduled_signal,
-			advance_time_lock: Default::default(),
-		}
-	}
 }
 
 impl TimerRegistry {
@@ -37,7 +27,7 @@ impl TimerRegistry {
 			let wakeup_time = *self.current_time.read().expect("RwLock was poisoned") + duration;
 			Self::schedule_timer(timers_by_time, wakeup_time)
 		};
-		let _ = self.any_timer_scheduled_signal.send(());
+		self.any_timer_scheduled_signal.notify(1);
 
 		receiver.await.expect("Channel was unexpectedly closed")
 	}
@@ -65,7 +55,7 @@ impl TimerRegistry {
 
 		if self.timers_by_time.read().expect("RwLock was poisoned").is_empty() {
 			// If no timer has been scheduled yet, wait for one to be scheduled
-			let _ = self.any_timer_scheduled_signal.subscribe().recv().await;
+			self.any_timer_scheduled_signal.listen().await;
 		}
 
 		loop {
