@@ -70,7 +70,8 @@ impl TimerRegistry {
 				}
 			};
 			for timer in timers_to_run {
-				timer.run().await;
+				let time_handler_finished = timer.trigger();
+				time_handler_finished.wait().await;
 			}
 		}
 

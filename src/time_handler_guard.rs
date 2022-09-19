@@ -37,10 +37,13 @@ mod test {
 		let mut waiter_future = Box::pin(waiter.wait());
 		assert!(
 			poll!(waiter_future.as_mut()).is_pending(),
-			"Waiter should have been pending before the guard is dropped"
+			"Waiter should have been pending before the guard is dropped",
 		);
 
 		drop(guard);
-		waiter_future.await;
+		assert!(
+			poll!(waiter_future.as_mut()).is_ready(),
+			"Waiter should have been ready after the guard was dropped",
+		);
 	}
 }
