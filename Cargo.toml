@@ -15,4 +15,4 @@ event-listener = "2"
 
 [dev-dependencies]
 futures-lite = {version = "1", default-features = false}
-tokio = {version = "1", features = ["rt", "macros"]}
+tokio = {version = "1", features = ["rt"]}
