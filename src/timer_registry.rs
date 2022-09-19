@@ -64,7 +64,9 @@ impl TimerRegistry {
 				match timers_by_time.keys().next() {
 					Some(&key) if key <= finished_time => {
 						*self.current_time.write().expect("RwLock was poisoned") = key;
-						timers_by_time.remove(&key).expect("We just checked that it exists")
+						timers_by_time
+							.remove(&key)
+							.unwrap_or_else(|| unreachable!("We just checked that it exists"))
 					}
 					_ => break,
 				}
