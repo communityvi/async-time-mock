@@ -80,14 +80,14 @@ impl TimerRegistry {
 				}
 			};
 			for timer in timers_to_run {
-				let (time_handler_guard, receiver) = TimeHandlerGuard::new();
+				let (time_handler_guard, time_handler_waiter) = TimeHandlerGuard::new();
 				if timer.send(time_handler_guard).is_err() {
 					// timer was already dropped, nothing to do
 					continue;
 				}
 
 				// timer was either handled, or the handler stopped existing somehow ;)
-				let _ = receiver.await;
+				time_handler_waiter.wait().await;
 			}
 		}
 
