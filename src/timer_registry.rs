@@ -1,11 +1,9 @@
 use crate::time_handler_guard::TimeHandlerGuard;
+use crate::timer::{Timer, TimerListener};
 use event_listener::Event;
 use std::collections::{BTreeMap, VecDeque};
 use std::sync::{RwLock, RwLockWriteGuard};
 use std::time::Duration;
-use tokio::sync::oneshot;
-
-type TimersByTime = BTreeMap<Duration, VecDeque<oneshot::Sender<TimeHandlerGuard>>>;
 
 #[derive(Default)]
 pub struct TimerRegistry {
@@ -15,6 +13,8 @@ pub struct TimerRegistry {
 	advance_time_lock: async_lock::Mutex<()>,
 }
 
+type TimersByTime = BTreeMap<Duration, VecDeque<Timer>>;
+
 impl TimerRegistry {
 	/// Schedules a timer to expire in "Duration", once expired, returns
 	/// a TimeHandlerGuard that must be dropped only once the timer event has been fully processed
@@ -22,23 +22,23 @@ impl TimerRegistry {
 	pub async fn sleep(&self, duration: Duration) -> TimeHandlerGuard {
 		assert!(!duration.is_zero(), "Sleeping for zero time is not allowed");
 
-		let receiver = {
+		let timer = {
 			let timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
 			let wakeup_time = *self.current_time.read().expect("RwLock was poisoned") + duration;
 			Self::schedule_timer(timers_by_time, wakeup_time)
 		};
 		self.any_timer_scheduled_signal.notify(1);
 
-		receiver.await.expect("Channel was unexpectedly closed")
+		timer.wait_until_triggered().await
 	}
 
-	fn schedule_timer(
-		mut timers_by_time: RwLockWriteGuard<'_, TimersByTime>,
-		at: Duration,
-	) -> oneshot::Receiver<TimeHandlerGuard> {
-		let (sender, receiver) = oneshot::channel();
-		timers_by_time.entry(at).or_insert_with(VecDeque::new).push_back(sender);
-		receiver
+	fn schedule_timer(mut timers_by_time: RwLockWriteGuard<'_, TimersByTime>, at: Duration) -> TimerListener {
+		let (trigger, timer) = Timer::new();
+		timers_by_time
+			.entry(at)
+			.or_insert_with(VecDeque::new)
+			.push_back(trigger);
+		timer
 	}
 
 	/// Advances test time by the given duration. Starts all scheduled timers that have expired
@@ -70,14 +70,7 @@ impl TimerRegistry {
 				}
 			};
 			for timer in timers_to_run {
-				let (time_handler_guard, time_handler_waiter) = TimeHandlerGuard::new();
-				if timer.send(time_handler_guard).is_err() {
-					// timer was already dropped, nothing to do
-					continue;
-				}
-
-				// timer was either handled, or the handler stopped existing somehow ;)
-				time_handler_waiter.wait().await;
+				timer.run().await;
 			}
 		}
 
