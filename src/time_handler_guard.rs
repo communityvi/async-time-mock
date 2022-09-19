@@ -28,21 +28,23 @@ impl TimeHandlerFinished {
 #[cfg(test)]
 mod test {
 	use crate::TimeHandlerGuard;
-	use futures_util::poll;
+	use futures_lite::future::poll_once;
+	use futures_lite::pin;
 
 	#[tokio::test]
 	async fn should_notify_once_time_handler_guard_is_dropped() {
 		let (guard, waiter) = TimeHandlerGuard::new();
 
-		let mut waiter_future = Box::pin(waiter.wait());
+		let waiter_future = waiter.wait();
+		pin!(waiter_future);
 		assert!(
-			poll!(waiter_future.as_mut()).is_pending(),
+			poll_once(waiter_future.as_mut()).await.is_none(),
 			"Waiter should have been pending before the guard is dropped",
 		);
 
 		drop(guard);
 		assert!(
-			poll!(waiter_future.as_mut()).is_ready(),
+			poll_once(waiter_future.as_mut()).await.is_some(),
 			"Waiter should have been ready after the guard was dropped",
 		);
 	}

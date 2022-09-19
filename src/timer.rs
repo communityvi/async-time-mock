@@ -54,21 +54,23 @@ impl TimerListener {
 #[cfg(test)]
 mod test {
 	use super::*;
-	use futures_util::poll;
+	use futures_lite::future::poll_once;
+	use futures_lite::pin;
 
 	#[tokio::test]
 	async fn timer_should_trigger_timer_listener() {
 		let (timer, listener) = Timer::new();
 
-		let mut wait_until_triggered = Box::pin(listener.wait_until_triggered());
+		let wait_until_triggered = listener.wait_until_triggered();
+		pin!(wait_until_triggered);
 		assert!(
-			poll!(wait_until_triggered.as_mut()).is_pending(),
+			poll_once(wait_until_triggered.as_mut()).await.is_none(),
 			"Future should have been pending before the timer is triggered",
 		);
 		let _ = timer.trigger();
 
 		assert!(
-			poll!(wait_until_triggered.as_mut()).is_ready(),
+			poll_once(wait_until_triggered.as_mut()).await.is_some(),
 			"Future should have been ready after timer was triggered"
 		);
 	}
@@ -80,15 +82,16 @@ mod test {
 		let time_handler_finished = timer.trigger();
 		let time_handler_guard = listener.wait_until_triggered().await;
 
-		let mut waiter = Box::pin(time_handler_finished.wait());
+		let waiter = time_handler_finished.wait();
+		pin!(waiter);
 		assert!(
-			poll!(waiter.as_mut()).is_pending(),
+			poll_once(waiter.as_mut()).await.is_none(),
 			"Future should have been pending before the time handler is finished (guard dropped)",
 		);
 
 		drop(time_handler_guard);
 		assert!(
-			poll!(waiter.as_mut()).is_ready(),
+			poll_once(waiter.as_mut()).await.is_some(),
 			"Future should have been ready after the time handler is finished (guard dropped)",
 		);
 	}
