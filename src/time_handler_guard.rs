@@ -1,20 +1,51 @@
-use tokio::sync::oneshot;
+use event_listener::{Event, EventListener};
 
 #[must_use = "TimeHandlerGuard must be kept until the timer has performed it's side-effects"]
-pub struct TimeHandlerGuard(Option<oneshot::Sender<()>>);
+pub struct TimeHandlerGuard(Event);
 
 impl TimeHandlerGuard {
-	pub fn new() -> (Self, oneshot::Receiver<()>) {
-		let (sender, receiver) = oneshot::channel();
-		(Self(Some(sender)), receiver)
+	pub(crate) fn new() -> (Self, TimeHandlerFinished) {
+		let event = Event::new();
+		let listener = event.listen();
+		(Self(event), TimeHandlerFinished(listener))
 	}
 }
 
 impl Drop for TimeHandlerGuard {
 	fn drop(&mut self) {
-		if let Some(sender) = self.0.take() {
-			// ignore error, because that means the other end is dropped anyways
-			let _ = sender.send(());
-		}
+		self.0.notify(1);
+	}
+}
+
+pub(crate) struct TimeHandlerFinished(EventListener);
+
+impl TimeHandlerFinished {
+	pub(crate) async fn wait(self) {
+		self.0.await
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use crate::TimeHandlerGuard;
+	use futures_lite::future::poll_once;
+	use futures_lite::pin;
+
+	#[tokio::test]
+	async fn should_notify_once_time_handler_guard_is_dropped() {
+		let (guard, waiter) = TimeHandlerGuard::new();
+
+		let waiter_future = waiter.wait();
+		pin!(waiter_future);
+		assert!(
+			poll_once(waiter_future.as_mut()).await.is_none(),
+			"Waiter should have been pending before the guard is dropped",
+		);
+
+		drop(guard);
+		assert!(
+			poll_once(waiter_future.as_mut()).await.is_some(),
+			"Waiter should have been ready after the guard was dropped",
+		);
 	}
 }

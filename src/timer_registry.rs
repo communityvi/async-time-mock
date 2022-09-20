@@ -1,29 +1,19 @@
 use crate::time_handler_guard::TimeHandlerGuard;
+use crate::timer::{Timer, TimerListener};
+use event_listener::Event;
 use std::collections::{BTreeMap, VecDeque};
 use std::sync::{RwLock, RwLockWriteGuard};
 use std::time::Duration;
-use tokio::sync::{broadcast, oneshot};
 
-type TimersByTime = BTreeMap<Duration, VecDeque<oneshot::Sender<TimeHandlerGuard>>>;
-
+#[derive(Default)]
 pub struct TimerRegistry {
 	current_time: RwLock<Duration>,
 	timers_by_time: RwLock<TimersByTime>,
-	any_timer_scheduled_signal: broadcast::Sender<()>,
-	advance_time_lock: tokio::sync::Mutex<()>,
+	any_timer_scheduled_signal: Event,
+	advance_time_lock: async_lock::Mutex<()>,
 }
 
-impl Default for TimerRegistry {
-	fn default() -> Self {
-		let (any_timer_scheduled_signal, _) = broadcast::channel(1);
-		Self {
-			current_time: Default::default(),
-			timers_by_time: Default::default(),
-			any_timer_scheduled_signal,
-			advance_time_lock: Default::default(),
-		}
-	}
-}
+type TimersByTime = BTreeMap<Duration, VecDeque<Timer>>;
 
 impl TimerRegistry {
 	/// Schedules a timer to expire in "Duration", once expired, returns
@@ -32,23 +22,23 @@ impl TimerRegistry {
 	pub async fn sleep(&self, duration: Duration) -> TimeHandlerGuard {
 		assert!(!duration.is_zero(), "Sleeping for zero time is not allowed");
 
-		let receiver = {
+		let timer = {
 			let timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
 			let wakeup_time = *self.current_time.read().expect("RwLock was poisoned") + duration;
 			Self::schedule_timer(timers_by_time, wakeup_time)
 		};
-		let _ = self.any_timer_scheduled_signal.send(());
+		self.any_timer_scheduled_signal.notify(1);
 
-		receiver.await.expect("Channel was unexpectedly closed")
+		timer.wait_until_triggered().await
 	}
 
-	fn schedule_timer(
-		mut timers_by_time: RwLockWriteGuard<'_, TimersByTime>,
-		at: Duration,
-	) -> oneshot::Receiver<TimeHandlerGuard> {
-		let (sender, receiver) = oneshot::channel();
-		timers_by_time.entry(at).or_insert_with(VecDeque::new).push_back(sender);
-		receiver
+	fn schedule_timer(mut timers_by_time: RwLockWriteGuard<'_, TimersByTime>, at: Duration) -> TimerListener {
+		let (trigger, timer) = Timer::new();
+		timers_by_time
+			.entry(at)
+			.or_insert_with(VecDeque::new)
+			.push_back(trigger);
+		timer
 	}
 
 	/// Advances test time by the given duration. Starts all scheduled timers that have expired
@@ -65,7 +55,7 @@ impl TimerRegistry {
 
 		if self.timers_by_time.read().expect("RwLock was poisoned").is_empty() {
 			// If no timer has been scheduled yet, wait for one to be scheduled
-			let _ = self.any_timer_scheduled_signal.subscribe().recv().await;
+			self.any_timer_scheduled_signal.listen().await;
 		}
 
 		loop {
@@ -74,20 +64,16 @@ impl TimerRegistry {
 				match timers_by_time.keys().next() {
 					Some(&key) if key <= finished_time => {
 						*self.current_time.write().expect("RwLock was poisoned") = key;
-						timers_by_time.remove(&key).expect("We just checked that it exists")
+						timers_by_time
+							.remove(&key)
+							.unwrap_or_else(|| unreachable!("We just checked that it exists"))
 					}
 					_ => break,
 				}
 			};
 			for timer in timers_to_run {
-				let (time_handler_guard, receiver) = TimeHandlerGuard::new();
-				if timer.send(time_handler_guard).is_err() {
-					// timer was already dropped, nothing to do
-					continue;
-				}
-
-				// timer was either handled, or the handler stopped existing somehow ;)
-				let _ = receiver.await;
+				let time_handler_finished = timer.trigger();
+				time_handler_finished.wait().await;
 			}
 		}
 
