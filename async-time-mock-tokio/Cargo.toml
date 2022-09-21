@@ -1,0 +1,15 @@
+[package]
+name = "async-time-mock-tokio"
+description = "Mockable time for use in async runtimes (tokio compatibility)."
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+authors = [
+	"Max Bruckner",
+	"Thomas Keppler",
+]
+
+
+[dependencies]
+async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core"}
+tokio = {version = "1", features = ["time"]}

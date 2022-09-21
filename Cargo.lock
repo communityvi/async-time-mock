@@ -23,6 +23,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-time-mock-tokio"
+version = "0.0.1"
+dependencies = [
+ "async-time-mock-core",
+ "tokio",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
