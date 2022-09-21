@@ -79,7 +79,7 @@ impl TimerRegistry {
 	}
 
 	/// Current test time, increases on every call to [`advance_time`].
-	pub fn current_time(&self) -> Instant {
+	pub fn now(&self) -> Instant {
 		Instant::new(*self.current_time.read().expect("RwLock was poisoned"))
 	}
 }
