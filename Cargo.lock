@@ -13,8 +13,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-time-mock"
-version = "0.1.0"
+name = "async-time-mock-core"
+version = "0.0.1"
 dependencies = [
  "async-lock",
  "event-listener",

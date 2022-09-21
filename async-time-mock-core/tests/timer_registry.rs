@@ -1,4 +1,4 @@
-use async_time_mock::TimerRegistry;
+use async_time_mock_core::TimerRegistry;
 use futures_lite::future::poll_once;
 use futures_lite::pin;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
