@@ -50,4 +50,17 @@ impl MockableClock {
 			Mock(registry) => registry.sleep(duration).await.into(),
 		}
 	}
+
+	pub async fn sleep_until(&self, until: Instant) -> TimeHandlerGuard {
+		match (self, until) {
+			(MockableClock::Real, Instant::Real(until)) => {
+				tokio::time::sleep_until(until).await;
+				TimeHandlerGuard::Real
+			}
+			#[cfg(test)]
+			(MockableClock::Mock(registry), Instant::Mock(until)) => registry.sleep_until(until).await.into(),
+			#[cfg(test)]
+			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
+		}
+	}
 }

@@ -51,4 +51,6 @@ impl MockableClock {
 			Mock(registry) => registry.sleep(duration).await.into(),
 		}
 	}
+
+	// AFAIK, async-std doesn't have any functionality equivalent to sleep_until
 }
