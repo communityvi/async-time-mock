@@ -33,12 +33,9 @@ impl TimerRegistry {
 	}
 
 	fn schedule_timer(mut timers_by_time: RwLockWriteGuard<'_, TimersByTime>, at: Duration) -> TimerListener {
-		let (trigger, timer) = Timer::new();
-		timers_by_time
-			.entry(at)
-			.or_insert_with(VecDeque::new)
-			.push_back(trigger);
-		timer
+		let (timer, listener) = Timer::new();
+		timers_by_time.entry(at).or_insert_with(VecDeque::new).push_back(timer);
+		listener
 	}
 
 	/// Advances test time by the given duration. Starts all scheduled timers that have expired
