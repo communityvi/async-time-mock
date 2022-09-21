@@ -1,5 +1,6 @@
 use crate::time_handler_guard::TimeHandlerGuard;
 use crate::timer::{Timer, TimerListener};
+use crate::Instant;
 use event_listener::Event;
 use std::collections::{BTreeMap, VecDeque};
 use std::sync::{RwLock, RwLockWriteGuard};
@@ -77,9 +78,8 @@ impl TimerRegistry {
 		*self.current_time.write().expect("RwLock was poisoned") = finished_time;
 	}
 
-	/// Current test time, starts with 0 once a new TimerRegistry is created and then
-	/// increases on every call to [`advance_time`].
-	pub fn current_time(&self) -> Duration {
-		*self.current_time.read().expect("RwLock was poisoned")
+	/// Current test time, increases on every call to [`advance_time`].
+	pub fn current_time(&self) -> Instant {
+		Instant::new(*self.current_time.read().expect("RwLock was poisoned"))
 	}
 }

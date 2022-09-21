@@ -15,6 +15,7 @@ async fn sleep_should_panic_with_zero_duration() {
 #[tokio::test]
 async fn sleep_should_finish_if_time_is_advanced_by_exactly_sleep_amount() {
 	let timer_registry = Arc::new(TimerRegistry::default());
+	let start = timer_registry.current_time();
 	let has_slept = Arc::new(AtomicBool::default());
 
 	let join_handle = tokio::spawn({
@@ -23,7 +24,7 @@ async fn sleep_should_finish_if_time_is_advanced_by_exactly_sleep_amount() {
 		async move {
 			let _guard = timer_registry.sleep(Duration::from_secs(10)).await;
 			has_slept.store(true, Ordering::SeqCst);
-			assert_eq!(Duration::from_secs(10), timer_registry.current_time());
+			assert_eq!(Duration::from_secs(10), timer_registry.current_time() - start);
 		}
 	});
 
@@ -42,6 +43,7 @@ async fn sleep_should_finish_if_time_is_advanced_by_exactly_sleep_amount() {
 #[tokio::test]
 async fn sleep_should_not_finish_if_the_time_is_advanced_by_less_than_sleep_amount() {
 	let timer_registry = Arc::new(TimerRegistry::default());
+	let start = timer_registry.current_time();
 	let has_slept = Arc::new(AtomicBool::default());
 
 	let join_handle = tokio::spawn({
@@ -50,7 +52,7 @@ async fn sleep_should_not_finish_if_the_time_is_advanced_by_less_than_sleep_amou
 		async move {
 			let _guard = timer_registry.sleep(Duration::from_secs(10)).await;
 			has_slept.store(true, Ordering::SeqCst);
-			assert_eq!(Duration::from_secs(10), timer_registry.current_time());
+			assert_eq!(Duration::from_secs(10), timer_registry.current_time() - start);
 		}
 	});
 
@@ -80,6 +82,7 @@ async fn sleep_should_not_finish_if_the_time_is_advanced_by_less_than_sleep_amou
 #[tokio::test]
 async fn should_work_with_multiple_sleeps_of_same_length() {
 	let timer_registry = Arc::new(TimerRegistry::default());
+	let start = timer_registry.current_time();
 	let sleep_counter = Arc::new(AtomicUsize::default());
 
 	let sleep_handles = (0..10)
@@ -90,7 +93,7 @@ async fn should_work_with_multiple_sleeps_of_same_length() {
 			tokio::task::spawn(async move {
 				let _guard = timer_registry.sleep(Duration::from_secs(10)).await;
 				sleep_counter.fetch_add(1, Ordering::SeqCst);
-				assert_eq!(Duration::from_secs(10), timer_registry.current_time());
+				assert_eq!(Duration::from_secs(10), timer_registry.current_time() - start);
 			})
 		})
 		.collect::<Vec<_>>();
@@ -115,6 +118,7 @@ async fn should_work_with_multiple_sleeps_of_same_length() {
 #[tokio::test]
 async fn should_work_with_multiple_sleeps_of_different_length_all_at_once() {
 	let timer_registry = Arc::new(TimerRegistry::default());
+	let start = timer_registry.current_time();
 	let sleep_counter = Arc::new(AtomicUsize::default());
 
 	let sleep_handles = (1..=10)
@@ -125,7 +129,7 @@ async fn should_work_with_multiple_sleeps_of_different_length_all_at_once() {
 			tokio::task::spawn(async move {
 				let _guard = timer_registry.sleep(Duration::from_secs(seconds)).await;
 				sleep_counter.fetch_add(1, Ordering::SeqCst);
-				assert_eq!(Duration::from_secs(seconds), timer_registry.current_time());
+				assert_eq!(Duration::from_secs(seconds), timer_registry.current_time() - start);
 			})
 		})
 		.collect::<Vec<_>>();
@@ -150,6 +154,7 @@ async fn should_work_with_multiple_sleeps_of_different_length_all_at_once() {
 #[tokio::test]
 async fn should_work_with_multiple_sleeps_of_different_length_in_steps() {
 	let timer_registry = Arc::new(TimerRegistry::default());
+	let start = timer_registry.current_time();
 	let sleep_counter = Arc::new(AtomicUsize::default());
 
 	let sleep_handles = (1..=10)
@@ -160,7 +165,7 @@ async fn should_work_with_multiple_sleeps_of_different_length_in_steps() {
 			tokio::task::spawn(async move {
 				let _guard = timer_registry.sleep(Duration::from_secs(seconds)).await;
 				sleep_counter.fetch_add(1, Ordering::SeqCst);
-				assert_eq!(Duration::from_secs(seconds), timer_registry.current_time());
+				assert_eq!(Duration::from_secs(seconds), timer_registry.current_time() - start);
 			})
 		})
 		.collect::<Vec<_>>();
@@ -197,6 +202,7 @@ async fn should_work_with_multiple_sleeps_of_different_length_in_steps() {
 #[tokio::test]
 async fn should_only_advance_time_once_the_first_timer_was_scheduled() {
 	let timer_registry = Arc::new(TimerRegistry::default());
+	let start = timer_registry.current_time();
 
 	let advance_time_future = timer_registry.advance_time(Duration::from_secs(1));
 	pin!(advance_time_future);
@@ -215,7 +221,7 @@ async fn should_only_advance_time_once_the_first_timer_was_scheduled() {
 	advance_time_future.await;
 	assert_eq!(
 		Duration::from_secs(1),
-		timer_registry.current_time(),
+		timer_registry.current_time() - start,
 		"Did not advance time after scheduling timer"
 	);
 }
