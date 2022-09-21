@@ -1,6 +1,7 @@
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 use std::time::Duration;
 
+// TODO: Should this store a reference to the TimerRegistry it came from, we could then panic if they don't match
 #[derive(Copy, Clone, Debug, Hash, PartialOrd, Ord, PartialEq, Eq)]
 pub struct Instant(Duration);
 
