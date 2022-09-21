@@ -1,0 +1,15 @@
+[package]
+name = "async-time-mock-smol"
+description = "Mockable time for use in async runtimes (smol compatibility)."
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+authors = [
+	"Max Bruckner",
+	"Thomas Keppler",
+]
+
+[dependencies]
+async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core"}
+# in order to minimize the amount of dependencies pulled in, use the `async-io` library for timers, which `smol` just reexports
+async-io = "1"
