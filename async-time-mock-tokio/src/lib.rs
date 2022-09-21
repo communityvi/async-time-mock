@@ -1,5 +1,8 @@
 use std::time::Duration;
 
+mod instant;
+pub use instant::Instant;
+
 #[derive(Clone)]
 pub enum MockableClock {
 	Real,
@@ -25,6 +28,15 @@ impl MockableClock {
 	pub fn mock() -> (Self, std::sync::Arc<async_time_mock_core::TimerRegistry>) {
 		let timer_registry = std::sync::Arc::new(async_time_mock_core::TimerRegistry::default());
 		(Self::Mock(timer_registry.clone()), timer_registry)
+	}
+
+	pub fn now(&self) -> Instant {
+		use MockableClock::*;
+		match self {
+			Real => tokio::time::Instant::now().into(),
+			#[cfg(test)]
+			Mock(registry) => registry.now().into(),
+		}
 	}
 
 	pub async fn sleep(&self, duration: Duration) -> TimeHandlerGuard {
