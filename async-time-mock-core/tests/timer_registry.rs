@@ -4,6 +4,7 @@ use futures_lite::pin;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
+use tokio::join;
 
 #[tokio::test]
 #[should_panic]
@@ -224,4 +225,71 @@ async fn should_only_advance_time_once_the_first_timer_was_scheduled() {
 		timer_registry.now() - start,
 		"Did not advance time after scheduling timer"
 	);
+}
+
+#[tokio::test]
+async fn should_sleep_until() {
+	let timer_registry = Arc::new(TimerRegistry::default());
+	let has_slept = Arc::new(AtomicBool::default());
+	let start = timer_registry.now();
+
+	let until = start + Duration::from_secs(1337);
+
+	let join_handle = tokio::spawn({
+		let timer_registry = timer_registry.clone();
+		let has_slept = has_slept.clone();
+		async move {
+			let _guard = timer_registry.sleep_until(until).await;
+			has_slept.store(true, Ordering::SeqCst);
+			assert_eq!(Duration::from_secs(1337), timer_registry.now() - start);
+		}
+	});
+
+	assert!(
+		!has_slept.load(Ordering::SeqCst),
+		"Should have slept before until has been reached"
+	);
+	timer_registry.advance_time(Duration::from_secs(1337)).await;
+	assert_eq!(until, timer_registry.now());
+	assert!(
+		has_slept.load(Ordering::SeqCst),
+		"Should have slept after until has been reached"
+	);
+
+	join_handle.await.expect("Sleeping task crashed");
+}
+
+#[tokio::test]
+async fn sleep_until_should_resolve_after_zero_time_if_in_the_past() {
+	let timer_registry = Arc::new(TimerRegistry::default());
+	let start = timer_registry.now();
+	let _ = join!(timer_registry.advance_time(Duration::from_secs(1337)), async {
+		let _ = timer_registry.sleep(Duration::from_secs(1)).await;
+	});
+
+	let has_slept = Arc::new(AtomicBool::default());
+
+	let until = timer_registry.now() - Duration::from_secs(42);
+
+	let join_handle = tokio::spawn({
+		let timer_registry = timer_registry.clone();
+		let has_slept = has_slept.clone();
+		async move {
+			let _guard = timer_registry.sleep_until(until).await;
+			has_slept.store(true, Ordering::SeqCst);
+			assert_eq!(Duration::from_secs(1337), timer_registry.now() - start);
+		}
+	});
+
+	assert!(
+		!has_slept.load(Ordering::SeqCst),
+		"Should have slept before advancing time"
+	);
+	timer_registry.advance_time(Duration::ZERO).await;
+	assert!(
+		has_slept.load(Ordering::SeqCst),
+		"Should have slept after until has been reached"
+	);
+
+	join_handle.await.expect("Sleeping task crashed");
 }

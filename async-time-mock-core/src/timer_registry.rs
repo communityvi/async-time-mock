@@ -33,6 +33,20 @@ impl TimerRegistry {
 		timer.wait_until_triggered().await
 	}
 
+	/// Schedules a timer to expire at "Instant", once expired, returns
+	/// a TimeHandlerGuard that must be dropped only once the timer event has been fully processed
+	/// (all sideeffects finished).
+	pub async fn sleep_until(&self, until: Instant) -> TimeHandlerGuard {
+		let timer = {
+			let timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
+			let wakeup_time = until.into_duration();
+			Self::schedule_timer(timers_by_time, wakeup_time)
+		};
+		self.any_timer_scheduled_signal.notify(1);
+
+		timer.wait_until_triggered().await
+	}
+
 	fn schedule_timer(mut timers_by_time: RwLockWriteGuard<'_, TimersByTime>, at: Duration) -> TimerListener {
 		let (timer, listener) = Timer::new();
 		timers_by_time.entry(at).or_insert_with(VecDeque::new).push_back(timer);
@@ -61,7 +75,8 @@ impl TimerRegistry {
 				let mut timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
 				match timers_by_time.keys().next() {
 					Some(&key) if key <= finished_time => {
-						*self.current_time.write().expect("RwLock was poisoned") = key;
+						let mut current_time = self.current_time.write().expect("RwLock was poisoned");
+						*current_time = key.max(*current_time);
 						timers_by_time
 							.remove(&key)
 							.unwrap_or_else(|| unreachable!("We just checked that it exists"))
