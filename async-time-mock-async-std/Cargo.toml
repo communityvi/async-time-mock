@@ -12,3 +12,6 @@ authors = [
 [dependencies]
 async-std = "1"
 async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core"}
+
+[features]
+unstable = ["async-std/unstable"]

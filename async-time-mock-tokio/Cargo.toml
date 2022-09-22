@@ -13,3 +13,7 @@ authors = [
 [dependencies]
 async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core"}
 tokio = {version = "1", features = ["time"]}
+futures-core = {version = "0.3", optional = true}
+
+[features]
+stream = ["dep:futures-core"]

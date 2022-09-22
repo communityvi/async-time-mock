@@ -1,8 +1,10 @@
-use async_io::Timer;
 use std::time::Duration;
 
 mod instant;
 pub use instant::Instant;
+
+mod timer;
+pub use timer::Timer;
 
 #[derive(Clone)]
 pub enum MockableClock {
@@ -44,7 +46,7 @@ impl MockableClock {
 		use MockableClock::*;
 		match self {
 			Real => {
-				Timer::after(duration).await;
+				async_io::Timer::after(duration).await;
 				TimeHandlerGuard::Real
 			}
 			#[cfg(test)]
@@ -55,11 +57,30 @@ impl MockableClock {
 	pub async fn sleep_until(&self, until: Instant) -> TimeHandlerGuard {
 		match (self, until) {
 			(MockableClock::Real, Instant::Real(until)) => {
-				Timer::at(until).await;
+				async_io::Timer::at(until).await;
 				TimeHandlerGuard::Real
 			}
 			#[cfg(test)]
 			(MockableClock::Mock(registry), Instant::Mock(until)) => registry.sleep_until(until).await.into(),
+			#[cfg(test)]
+			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
+		}
+	}
+
+	pub async fn interval(&self, period: Duration) -> Timer {
+		use MockableClock::*;
+		match self {
+			Real => async_io::Timer::interval(period).into(),
+			#[cfg(test)]
+			Mock(registry) => registry.interval(period).into(),
+		}
+	}
+
+	pub async fn interval_at(&self, start: Instant, period: Duration) -> Timer {
+		match (self, start) {
+			(MockableClock::Real, Instant::Real(start)) => async_io::Timer::interval_at(start, period).into(),
+			#[cfg(test)]
+			(MockableClock::Mock(registry), Instant::Mock(start)) => registry.interval_at(start, period).into(),
 			#[cfg(test)]
 			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
 		}

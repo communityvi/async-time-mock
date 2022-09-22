@@ -4,6 +4,11 @@ use std::time::Duration;
 mod instant;
 pub use instant::Instant;
 
+#[cfg(feature = "unstable")]
+mod interval;
+#[cfg(feature = "unstable")]
+pub use interval::Interval;
+
 #[derive(Clone)]
 pub enum MockableClock {
 	Real,
@@ -53,4 +58,18 @@ impl MockableClock {
 	}
 
 	// AFAIK, async-std doesn't have any functionality equivalent to sleep_until
+
+	#[cfg(feature = "unstable")]
+	pub fn interval(&self, period: Duration) -> Interval {
+		use MockableClock::*;
+		match self {
+			Real => async_std::stream::interval(period).into(),
+			#[cfg(test)]
+			Mock(registry) => {
+				let mut interval = registry.interval(period);
+				interval.set_missed_tick_behavior(async_time_mock_core::MissedTickBehavior::Delay);
+				interval.into()
+			}
+		}
+	}
 }
