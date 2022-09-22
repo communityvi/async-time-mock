@@ -14,3 +14,6 @@ Supported runtimes:
 
 Supported operations:
 * `sleep`
+* `sleep_until`
+* `interval`
+* `interval_at`
