@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use std::future::{poll_fn, Future};
 use std::pin::Pin;
 use std::sync::Arc;
-use std::task::{Context, Poll};
+use std::task::{ready, Context, Poll};
 use std::time::Duration;
 
 pub struct Interval {
@@ -33,11 +33,7 @@ impl Interval {
 	}
 
 	pub fn poll_tick(&mut self, context: &mut Context<'_>) -> Poll<(TimeHandlerGuard, Instant)> {
-		use Poll::*;
-		let guard = match self.sleep.as_mut().poll(context) {
-			Ready(guard) => guard,
-			Pending => return Pending,
-		};
+		let guard = ready!(self.sleep.as_mut().poll(context));
 
 		let now = self.timer_registry.now();
 		let tick_time = self.next_deadline;
@@ -61,7 +57,7 @@ impl Interval {
 
 		self.sleep = Box::pin(self.timer_registry.sleep_until(self.next_deadline));
 
-		Ready((guard, tick_time))
+		Poll::Ready((guard, tick_time))
 	}
 
 	pub fn reset(&mut self) {
