@@ -120,39 +120,12 @@ impl SubAssign<Duration> for Instant {
 
 #[cfg(test)]
 mod test {
-	use crate::Instant;
+	use super::*;
 	use std::time::Duration;
 
 	#[test]
 	#[should_panic]
 	fn should_not_allow_fetching_duration_from_incorrect_timer_registry() {
-		INSTANT0.into_duration(1);
+		Instant::new(Duration::ZERO, 0).into_duration(1);
 	}
-
-	#[test]
-	#[should_panic]
-	fn should_not_allow_calculating_duration_between_instants_from_different_timer_registries() {
-		INSTANT1.duration_since(INSTANT0);
-	}
-
-	#[test]
-	#[should_panic]
-	fn should_not_allow_calculating_checked_duration_between_instants_from_different_timer_registries() {
-		INSTANT1.checked_duration_since(INSTANT0);
-	}
-
-	#[test]
-	#[should_panic]
-	fn should_not_allow_calculating_saturated_duration_between_instants_from_different_timer_registries() {
-		INSTANT1.saturated_duration_since(INSTANT0);
-	}
-
-	#[test]
-	#[should_panic]
-	fn should_not_allow_subtracting_two_instants_from_different_timer_registries() {
-		let _ = INSTANT1 - INSTANT0;
-	}
-
-	const INSTANT0: Instant = Instant::new(Duration::from_secs(0), 0);
-	const INSTANT1: Instant = Instant::new(Duration::from_secs(1), 1);
 }
