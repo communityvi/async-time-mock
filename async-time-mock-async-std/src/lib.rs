@@ -4,6 +4,8 @@ use std::time::Duration;
 mod instant;
 pub use instant::Instant;
 
+pub use async_time_mock_core;
+
 #[cfg(feature = "unstable")]
 mod interval;
 #[cfg(feature = "unstable")]

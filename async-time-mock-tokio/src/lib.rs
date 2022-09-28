@@ -4,6 +4,8 @@ mod instant;
 use crate::interval::Interval;
 pub use instant::Instant;
 
+pub use async_time_mock_core;
+
 mod interval;
 
 #[derive(Clone)]

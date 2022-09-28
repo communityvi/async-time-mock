@@ -6,6 +6,8 @@ pub use instant::Instant;
 mod timer;
 pub use timer::Timer;
 
+pub use async_time_mock_core;
+
 #[derive(Clone)]
 pub enum MockableClock {
 	Real,
