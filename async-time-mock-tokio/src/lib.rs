@@ -72,11 +72,7 @@ impl MockableClock {
 		match self {
 			Real => tokio::time::interval(period).into(),
 			#[cfg(test)]
-			Mock(registry) => {
-				let mut interval = registry.interval(period);
-				interval.set_missed_tick_threshold(TOKIO_MISSED_TICK_THRESHOLD);
-				interval.into()
-			}
+			Mock(registry) => registry.interval(period).into(),
 		}
 	}
 
@@ -84,17 +80,9 @@ impl MockableClock {
 		match (self, start) {
 			(MockableClock::Real, Instant::Real(start)) => tokio::time::interval_at(start, period).into(),
 			#[cfg(test)]
-			(MockableClock::Mock(registry), Instant::Mock(start)) => {
-				let mut interval = registry.interval_at(start, period);
-				interval.set_missed_tick_threshold(TOKIO_MISSED_TICK_THRESHOLD);
-				interval.into()
-			}
+			(MockableClock::Mock(registry), Instant::Mock(start)) => registry.interval_at(start, period).into(),
 			#[cfg(test)]
 			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
 		}
 	}
 }
-
-#[cfg(test)]
-// See https://github.com/tokio-rs/tokio/blob/dea1cd49955ab5e9d041e9f1ed0c5f28e18246de/tokio/src/time/interval.rs#L478
-const TOKIO_MISSED_TICK_THRESHOLD: Duration = Duration::from_millis(5);

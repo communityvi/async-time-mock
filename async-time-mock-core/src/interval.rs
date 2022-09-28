@@ -11,8 +11,6 @@ pub struct Interval {
 	sleep: Pin<Box<dyn Future<Output = TimeHandlerGuard> + Send>>,
 	next_deadline: Instant,
 	period: Duration,
-	missed_tick_behavior: MissedTickBehavior,
-	missed_tick_threshold: Duration,
 }
 
 impl Interval {
@@ -23,8 +21,6 @@ impl Interval {
 			sleep,
 			next_deadline: start,
 			period,
-			missed_tick_behavior: MissedTickBehavior::Burst,
-			missed_tick_threshold: Duration::ZERO,
 		}
 	}
 
@@ -35,25 +31,9 @@ impl Interval {
 	pub fn poll_tick(&mut self, context: &mut Context<'_>) -> Poll<(TimeHandlerGuard, Instant)> {
 		let guard = ready!(self.sleep.as_mut().poll(context));
 
-		let now = self.timer_registry.now();
 		let tick_time = self.next_deadline;
 
-		if now > (tick_time + self.missed_tick_threshold) {
-			use MissedTickBehavior::*;
-			self.next_deadline = match self.missed_tick_behavior {
-				Burst => tick_time + self.period,
-				Delay => now + self.period,
-				Skip => {
-					let mut new_deadline = tick_time + self.period;
-					while new_deadline < now {
-						new_deadline += self.period;
-					}
-					new_deadline
-				}
-			};
-		} else {
-			self.next_deadline = tick_time + self.period;
-		}
+		self.next_deadline = tick_time + self.period;
 
 		self.sleep = Box::pin(self.timer_registry.sleep_until(self.next_deadline));
 
@@ -64,22 +44,6 @@ impl Interval {
 		let now = self.timer_registry.now();
 		self.next_deadline = now + self.period;
 		self.sleep = Box::pin(self.timer_registry.sleep_until(self.next_deadline));
-	}
-
-	pub fn missed_tick_behavior(&self) -> MissedTickBehavior {
-		self.missed_tick_behavior
-	}
-
-	pub fn set_missed_tick_behavior(&mut self, missed_tick_behavior: MissedTickBehavior) {
-		self.missed_tick_behavior = missed_tick_behavior;
-	}
-
-	pub fn missed_tick_threshold(&self) -> Duration {
-		self.missed_tick_threshold
-	}
-
-	pub fn set_missed_tick_threshold(&mut self, missed_tick_threshold: Duration) {
-		self.missed_tick_threshold = missed_tick_threshold;
 	}
 
 	pub fn period(&self) -> Duration {
@@ -94,8 +58,6 @@ impl Debug for Interval {
 			sleep: _,
 			next_deadline,
 			period,
-			missed_tick_behavior,
-			missed_tick_threshold,
 		} = self;
 		formatter
 			.debug_struct("Interval")
@@ -103,16 +65,6 @@ impl Debug for Interval {
 			.field("sleep", &"impl Future<Output = TimeHandlerGuard>")
 			.field("next_deadline", next_deadline)
 			.field("period", period)
-			.field("missed_tick_behavior", missed_tick_behavior)
-			.field("missed_tick_threshold", missed_tick_threshold)
 			.finish()
 	}
-}
-
-/// Same as [`tokio::time::MissedTickBehavior`]
-#[derive(Debug, Copy, Clone)]
-pub enum MissedTickBehavior {
-	Burst,
-	Delay,
-	Skip,
 }

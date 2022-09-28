@@ -62,29 +62,14 @@ impl Interval {
 		}
 	}
 
-	pub fn missed_tick_behavior(&self) -> MissedTickBehavior {
-		use Interval::*;
-		match self {
-			Real(interval) => interval.missed_tick_behavior(),
-			#[cfg(test)]
-			Mock(interval) => match interval.missed_tick_behavior() {
-				async_time_mock_core::MissedTickBehavior::Burst => MissedTickBehavior::Burst,
-				async_time_mock_core::MissedTickBehavior::Delay => MissedTickBehavior::Delay,
-				async_time_mock_core::MissedTickBehavior::Skip => MissedTickBehavior::Skip,
-			},
-		}
-	}
-
+	/// NOTE: Mock timers can never miss a tick, therefore the MissedTickBehavior is only relevant for
+	/// the real timer.
 	pub fn set_missed_tick_behavior(&mut self, missed_tick_behavior: MissedTickBehavior) {
 		use Interval::*;
 		match self {
 			Real(interval) => interval.set_missed_tick_behavior(missed_tick_behavior),
 			#[cfg(test)]
-			Mock(interval) => interval.set_missed_tick_behavior(match missed_tick_behavior {
-				MissedTickBehavior::Burst => async_time_mock_core::MissedTickBehavior::Burst,
-				MissedTickBehavior::Delay => async_time_mock_core::MissedTickBehavior::Delay,
-				MissedTickBehavior::Skip => async_time_mock_core::MissedTickBehavior::Skip,
-			}),
+			Mock(_) => {}
 		}
 	}
 

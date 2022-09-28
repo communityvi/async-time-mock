@@ -5,6 +5,6 @@ mod timer;
 mod timer_registry;
 
 pub use instant::Instant;
-pub use interval::{Interval, MissedTickBehavior};
+pub use interval::Interval;
 pub use time_handler_guard::TimeHandlerGuard;
 pub use timer_registry::TimerRegistry;

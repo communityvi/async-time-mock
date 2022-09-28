@@ -65,11 +65,7 @@ impl MockableClock {
 		match self {
 			Real => async_std::stream::interval(period).into(),
 			#[cfg(test)]
-			Mock(registry) => {
-				let mut interval = registry.interval(period);
-				interval.set_missed_tick_behavior(async_time_mock_core::MissedTickBehavior::Delay);
-				interval.into()
-			}
+			Mock(registry) => registry.interval(period).into(),
 		}
 	}
 }
