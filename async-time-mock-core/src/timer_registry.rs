@@ -5,15 +5,28 @@ use event_listener::Event;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt::{Debug, Formatter};
 use std::future::Future;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
 use std::time::Duration;
 
-#[derive(Default)]
 pub struct TimerRegistry {
+	id: u64,
 	current_time: RwLock<Duration>,
 	timers_by_time: RwLock<TimersByTime>,
 	any_timer_scheduled_signal: Event,
 	advance_time_lock: async_lock::Mutex<()>,
+}
+
+impl Default for TimerRegistry {
+	fn default() -> Self {
+		Self {
+			id: Self::next_id(),
+			current_time: Default::default(),
+			timers_by_time: Default::default(),
+			any_timer_scheduled_signal: Default::default(),
+			advance_time_lock: Default::default(),
+		}
+	}
 }
 
 type TimersByTime = BTreeMap<Duration, VecDeque<Timer>>;
@@ -45,7 +58,7 @@ impl TimerRegistry {
 	pub fn sleep_until(&self, until: Instant) -> impl Future<Output = TimeHandlerGuard> + Send + Sync + 'static {
 		let timer = {
 			let timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
-			let wakeup_time = until.into_duration();
+			let wakeup_time = until.into_duration(self.id);
 			Self::schedule_timer(timers_by_time, wakeup_time)
 		};
 		self.any_timer_scheduled_signal.notify(1);
@@ -109,13 +122,20 @@ impl TimerRegistry {
 
 	/// Current test time, increases on every call to [`advance_time`].
 	pub fn now(&self) -> Instant {
-		Instant::new(*self.current_time.read().expect("RwLock was poisoned"))
+		Instant::new(*self.current_time.read().expect("RwLock was poisoned"), self.id)
+	}
+
+	fn next_id() -> u64 {
+		static ID_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+		ID_COUNTER.fetch_add(1, Ordering::Relaxed)
 	}
 }
 
 impl Debug for TimerRegistry {
 	fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
 		let Self {
+			id,
 			current_time,
 			timers_by_time: _,
 			any_timer_scheduled_signal: _,
@@ -123,6 +143,7 @@ impl Debug for TimerRegistry {
 		} = self;
 		formatter
 			.debug_struct("TimerRegistry")
+			.field("id", id)
 			.field("current_time", current_time)
 			.finish_non_exhaustive()
 	}
