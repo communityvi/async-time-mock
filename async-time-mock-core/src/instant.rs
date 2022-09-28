@@ -15,7 +15,7 @@ impl Instant {
 		}
 	}
 
-	pub(crate) fn into_duration(self, timer_registry_id: u64) -> Duration {
+	pub(crate) const fn into_duration(self, timer_registry_id: u64) -> Duration {
 		if self.timer_registry_id != timer_registry_id {
 			panic!("Can't use Instants from one TimerRegistry in another TimerRegistry.");
 		}
@@ -25,19 +25,19 @@ impl Instant {
 	// std::time::Instant::now() isn't supported because it would require a TimerRegistry
 
 	/// Equivalent to [`std::time::Instant::duration_since`].
-	pub fn duration_since(&self, earlier: Self) -> Duration {
+	pub const fn duration_since(&self, earlier: Self) -> Duration {
 		self.assert_instances_are_compatible(&earlier);
-		self.duration - earlier.duration
+		self.duration.saturating_sub(earlier.duration)
 	}
 
 	/// Equivalent to [`std::time::Instant::checked_duration_since`].
-	pub fn checked_duration_since(&self, earlier: Self) -> Option<Duration> {
+	pub const fn checked_duration_since(&self, earlier: Self) -> Option<Duration> {
 		self.assert_instances_are_compatible(&earlier);
 		self.duration.checked_sub(earlier.duration)
 	}
 
 	/// Equivalent to [`std::time::Instant::saturated_duration_since`].
-	pub fn saturated_duration_since(&self, earlier: Self) -> Duration {
+	pub const fn saturated_duration_since(&self, earlier: Self) -> Duration {
 		self.assert_instances_are_compatible(&earlier);
 		self.duration.saturating_sub(earlier.duration)
 	}
@@ -45,24 +45,30 @@ impl Instant {
 	// std::time::Instant::elapsed() isn't supported because it would require a TimerRegistry
 
 	/// Equivalent to [`std::time::Instant::checked_add`].
-	pub fn checked_add(&self, duration: Duration) -> Option<Self> {
+	pub const fn checked_add(&self, duration: Duration) -> Option<Self> {
 		let timer_registry_id = self.timer_registry_id;
-		self.duration.checked_add(duration).map(|duration| Self {
-			duration,
-			timer_registry_id,
-		})
+		match self.duration.checked_add(duration) {
+			Some(duration) => Some(Self {
+				duration,
+				timer_registry_id,
+			}),
+			None => None,
+		}
 	}
 
 	/// Equivalent to [`std::time::Instant::checked_sub`].
-	pub fn checked_sub(&self, duration: Duration) -> Option<Self> {
+	pub const fn checked_sub(&self, duration: Duration) -> Option<Self> {
 		let timer_registry_id = self.timer_registry_id;
-		self.duration.checked_sub(duration).map(|duration| Self {
-			duration,
-			timer_registry_id,
-		})
+		match self.duration.checked_sub(duration) {
+			Some(duration) => Some(Self {
+				duration,
+				timer_registry_id,
+			}),
+			None => None,
+		}
 	}
 
-	fn assert_instances_are_compatible(&self, other: &Self) {
+	const fn assert_instances_are_compatible(&self, other: &Self) {
 		if self.timer_registry_id != other.timer_registry_id {
 			panic!("Operations between Instant's from different TimerRegistry instances are not supported.");
 		}
