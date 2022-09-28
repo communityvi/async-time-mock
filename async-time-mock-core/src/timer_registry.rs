@@ -1,9 +1,11 @@
 use crate::time_handler_guard::TimeHandlerGuard;
 use crate::timer::{Timer, TimerListener};
-use crate::Instant;
+use crate::{Instant, Interval};
 use event_listener::Event;
 use std::collections::{BTreeMap, VecDeque};
-use std::sync::{RwLock, RwLockWriteGuard};
+use std::fmt::{Debug, Formatter};
+use std::future::Future;
+use std::sync::{Arc, RwLock, RwLockWriteGuard};
 use std::time::Duration;
 
 #[derive(Default)]
@@ -20,7 +22,9 @@ impl TimerRegistry {
 	/// Schedules a timer to expire in "Duration", once expired, returns
 	/// a TimeHandlerGuard that must be dropped only once the timer event has been fully processed
 	/// (all sideeffects finished).
-	pub async fn sleep(&self, duration: Duration) -> TimeHandlerGuard {
+	///
+	/// Roughly eqivalent to `async pub fn sleep(&self, duration: Duration) -> TimeHandlerGuard`.
+	pub fn sleep(&self, duration: Duration) -> impl Future<Output = TimeHandlerGuard> + Send + Sync + 'static {
 		assert!(!duration.is_zero(), "Sleeping for zero time is not allowed");
 
 		let timer = {
@@ -30,13 +34,15 @@ impl TimerRegistry {
 		};
 		self.any_timer_scheduled_signal.notify(1);
 
-		timer.wait_until_triggered().await
+		timer.wait_until_triggered()
 	}
 
 	/// Schedules a timer to expire at "Instant", once expired, returns
 	/// a TimeHandlerGuard that must be dropped only once the timer event has been fully processed
 	/// (all sideeffects finished).
-	pub async fn sleep_until(&self, until: Instant) -> TimeHandlerGuard {
+	///
+	/// Roughly eqivalent to `async pub fn sleep_until(&self, until: Instant) -> TimeHandlerGuard`.
+	pub fn sleep_until(&self, until: Instant) -> impl Future<Output = TimeHandlerGuard> + Send + Sync + 'static {
 		let timer = {
 			let timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
 			let wakeup_time = until.into_duration();
@@ -44,7 +50,15 @@ impl TimerRegistry {
 		};
 		self.any_timer_scheduled_signal.notify(1);
 
-		timer.wait_until_triggered().await
+		timer.wait_until_triggered()
+	}
+
+	pub fn interval(self: &Arc<Self>, period: Duration) -> Interval {
+		Interval::new(self.clone(), self.now(), period)
+	}
+
+	pub fn interval_at(self: &Arc<Self>, start: Instant, period: Duration) -> Interval {
+		Interval::new(self.clone(), start, period)
 	}
 
 	fn schedule_timer(mut timers_by_time: RwLockWriteGuard<'_, TimersByTime>, at: Duration) -> TimerListener {
@@ -96,5 +110,20 @@ impl TimerRegistry {
 	/// Current test time, increases on every call to [`advance_time`].
 	pub fn now(&self) -> Instant {
 		Instant::new(*self.current_time.read().expect("RwLock was poisoned"))
+	}
+}
+
+impl Debug for TimerRegistry {
+	fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+		let Self {
+			current_time,
+			timers_by_time: _,
+			any_timer_scheduled_signal: _,
+			advance_time_lock: _,
+		} = self;
+		formatter
+			.debug_struct("TimerRegistry")
+			.field("current_time", current_time)
+			.finish_non_exhaustive()
 	}
 }
