@@ -1,4 +1,5 @@
 use crate::time_handler_guard::TimeHandlerGuard;
+use crate::timeout::Timeout;
 use crate::timer::{Timer, TimerListener};
 use crate::{Instant, Interval};
 use event_listener::Event;
@@ -55,6 +56,9 @@ impl TimerRegistry {
 	/// (all sideeffects finished).
 	///
 	/// Roughly eqivalent to `async pub fn sleep_until(&self, until: Instant) -> TimeHandlerGuard`.
+	///
+	/// # Panics
+	/// When `until` was created by a different instance of `TimerRegistry`.
 	pub fn sleep_until(&self, until: Instant) -> impl Future<Output = TimeHandlerGuard> + Send + Sync + 'static {
 		let timer = {
 			let timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
@@ -64,6 +68,35 @@ impl TimerRegistry {
 		self.any_timer_scheduled_signal.notify(1);
 
 		timer.wait_until_triggered()
+	}
+
+	/// Combines a future with a `sleep` timer. If the future finishes before
+	/// the timer has expired, returns the futures output. Otherwise returns
+	/// `Elapsed` which contains a `TimeHandlerGuard` that must be dropped once the timeout has been fully processed
+	/// (all sideeffects finished).
+	///
+	/// Roughly equivalent to `async pub fn timeout<F: Future>(&self, timeout: Duration, future: F) -> Result<F::Output, Elapsed>`
+	pub fn timeout<F>(&self, timeout: Duration, future: F) -> Timeout<F>
+	where
+		F: Future,
+	{
+		Timeout::new(future, self.sleep(timeout))
+	}
+
+	/// Combines a future with a `sleep_until` timer. If the future finishes before
+	/// the timer has expired, returns the futures output. Otherwise returns
+	/// `Elapsed` which contains a `TimeHandlerGuard` that must be dropped once the timeout has been fully processed
+	/// (all sideeffects finished).
+	///
+	/// Roughly equivalent to `async pub fn timeout_at<F: Future>(&self, at: Instant, future: F) -> Result<F::Output, Elapsed>`
+	///
+	/// # Panics
+	/// When `at` was created by a different instance of `TimerRegistry`.
+	pub fn timeout_at<F>(&self, at: Instant, future: F) -> Timeout<F>
+	where
+		F: Future,
+	{
+		Timeout::new(future, self.sleep_until(at))
 	}
 
 	pub fn interval(self: &Arc<Self>, period: Duration) -> Interval {
