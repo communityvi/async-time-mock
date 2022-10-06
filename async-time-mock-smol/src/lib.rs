@@ -87,4 +87,6 @@ impl MockableClock {
 			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
 		}
 	}
+
+	// AFAIK smol doesn't have any timeout functionality
 }

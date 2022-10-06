@@ -1,8 +1,11 @@
 use async_std::task::sleep;
+use std::future::Future;
 use std::time::Duration;
 
 mod instant;
 pub use instant::Instant;
+mod timeout_error;
+pub use timeout_error::TimeoutError;
 
 pub use async_time_mock_core;
 
@@ -70,4 +73,18 @@ impl MockableClock {
 			Mock(registry) => registry.interval(period).into(),
 		}
 	}
+
+	pub async fn timeout<F, T>(&self, duration: Duration, future: F) -> Result<T, TimeoutError>
+	where
+		F: Future<Output = T>,
+	{
+		use MockableClock::*;
+		match self {
+			Real => async_std::future::timeout(duration, future).await.map_err(Into::into),
+			#[cfg(test)]
+			Mock(registry) => registry.timeout(duration, future).await.map_err(Into::into),
+		}
+	}
+
+	// AFAIK, async-std doesn't have any functionality equivalent to timeout_at
 }

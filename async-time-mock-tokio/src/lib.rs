@@ -1,3 +1,4 @@
+use std::future::Future;
 use std::time::Duration;
 
 mod instant;
@@ -6,7 +7,10 @@ pub use instant::Instant;
 
 pub use async_time_mock_core;
 
+mod elapsed;
 mod interval;
+mod timeout;
+pub use timeout::Timeout;
 
 #[derive(Clone)]
 pub enum MockableClock {
@@ -83,6 +87,31 @@ impl MockableClock {
 			(MockableClock::Real, Instant::Real(start)) => tokio::time::interval_at(start, period).into(),
 			#[cfg(test)]
 			(MockableClock::Mock(registry), Instant::Mock(start)) => registry.interval_at(start, period).into(),
+			#[cfg(test)]
+			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
+		}
+	}
+
+	pub fn timeout<T>(&self, duration: Duration, future: T) -> Timeout<T>
+	where
+		T: Future,
+	{
+		use MockableClock::*;
+		match self {
+			Real => tokio::time::timeout(duration, future).into(),
+			#[cfg(test)]
+			Mock(registry) => registry.timeout(duration, future).into(),
+		}
+	}
+
+	pub fn timeout_at<T>(&self, deadline: Instant, future: T) -> Timeout<T>
+	where
+		T: Future,
+	{
+		match (self, deadline) {
+			(MockableClock::Real, Instant::Real(deadline)) => tokio::time::timeout_at(deadline, future).into(),
+			#[cfg(test)]
+			(MockableClock::Mock(registry), Instant::Mock(deadline)) => registry.timeout_at(deadline, future).into(),
 			#[cfg(test)]
 			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
 		}
