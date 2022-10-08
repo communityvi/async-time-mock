@@ -1,13 +1,15 @@
 use crate::elapsed::Elapsed;
+use pin_project::pin_project;
 use std::fmt::{Debug, Formatter};
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
+#[pin_project(project = ProjectedTimeout)]
 pub enum Timeout<T> {
-	Real(tokio::time::Timeout<T>),
+	Real(#[pin] tokio::time::Timeout<T>),
 	#[cfg(feature = "mock")]
-	Mock(async_time_mock_core::Timeout<T>),
+	Mock(#[pin] async_time_mock_core::Timeout<T>),
 }
 
 impl<T> Timeout<T> {
@@ -59,25 +61,11 @@ where
 	type Output = Result<T::Output, Elapsed>;
 
 	fn poll(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<Self::Output> {
-		// SAFETY: `this` is never used to move the underlying data.
-		let this = unsafe { self.get_unchecked_mut() };
-		use Timeout::*;
-		match this {
-			Real(timeout) => {
-				// SAFETY: `this` comes from a `self: Pin<&mut Self>` therefore `timeout` is already
-				// transitively pinned.
-				unsafe { Pin::new_unchecked(timeout) }
-					.poll(context)
-					.map(|result| result.map_err(Into::into))
-			}
+		use ProjectedTimeout::*;
+		match self.project() {
+			Real(timeout) => timeout.poll(context).map(|result| result.map_err(Into::into)),
 			#[cfg(feature = "mock")]
-			Mock(timeout) => {
-				// SAFETY: `this` comes from a `self: Pin<&mut Self>` therefore `timeout` is already
-				// transitively pinned.
-				unsafe { Pin::new_unchecked(timeout) }
-					.poll(context)
-					.map(|result| result.map_err(Into::into))
-			}
+			Mock(timeout) => timeout.poll(context).map(|result| result.map_err(Into::into)),
 		}
 	}
 }

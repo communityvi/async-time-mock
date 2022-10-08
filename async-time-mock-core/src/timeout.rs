@@ -1,12 +1,16 @@
 use crate::TimeHandlerGuard;
+use pin_project_lite::pin_project;
 use std::fmt::{Debug, Display, Formatter};
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-pub struct Timeout<F> {
-	future: F,
-	sleep: Pin<Box<dyn Future<Output = TimeHandlerGuard> + Send>>,
+pin_project! {
+	pub struct Timeout<F> {
+		#[pin]
+		future: F,
+		sleep: Pin<Box<dyn Future<Output = TimeHandlerGuard> + Send>>,
+	}
 }
 
 impl<F> Timeout<F> {
@@ -35,17 +39,13 @@ where
 	type Output = Result<F::Output, Elapsed>;
 
 	fn poll(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<Self::Output> {
-		// SAFETY: `this` is never used to move the underlying data.
-		let this = unsafe { self.get_unchecked_mut() };
+		let this = self.project();
 		use Poll::*;
 		if let Ready(guard) = this.sleep.as_mut().poll(context) {
 			return Ready(Err(Elapsed(guard)));
 		};
 
-		// SAFETY: `this` comes from a `self: Pin<&mut Self>` therefore `this.future` is already
-		// transitively pinned.
-		let pinned_future = unsafe { Pin::new_unchecked(&mut this.future) };
-		pinned_future.poll(context).map(Ok)
+		this.future.poll(context).map(Ok)
 	}
 }
 
