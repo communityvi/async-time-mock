@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 use std::time::Duration;
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
@@ -103,6 +104,54 @@ impl Ord for Instant {
 			(Instant::Mock(this), Instant::Mock(other)) => this.cmp(other),
 			#[cfg(test)]
 			_ => panic!("Instants weren't compatible, both need to be either real or mocked"),
+		}
+	}
+}
+
+impl Add<Duration> for Instant {
+	type Output = Instant;
+
+	fn add(self, rhs: Duration) -> Self::Output {
+		use Instant::*;
+		match self {
+			Real(instant) => instant.add(rhs).into(),
+			#[cfg(test)]
+			Mock(instant) => instant.add(rhs).into(),
+		}
+	}
+}
+
+impl AddAssign<Duration> for Instant {
+	fn add_assign(&mut self, rhs: Duration) {
+		use Instant::*;
+		match self {
+			Real(instant) => instant.add_assign(rhs),
+			#[cfg(test)]
+			Mock(instant) => instant.add_assign(rhs),
+		}
+	}
+}
+
+impl Sub<Duration> for Instant {
+	type Output = Instant;
+
+	fn sub(self, rhs: Duration) -> Self::Output {
+		use Instant::*;
+		match self {
+			Real(instant) => instant.sub(rhs).into(),
+			#[cfg(test)]
+			Mock(instant) => instant.sub(rhs).into(),
+		}
+	}
+}
+
+impl SubAssign<Duration> for Instant {
+	fn sub_assign(&mut self, rhs: Duration) {
+		use Instant::*;
+		match self {
+			Real(instant) => instant.sub_assign(rhs),
+			#[cfg(test)]
+			Mock(instant) => instant.sub_assign(rhs),
 		}
 	}
 }
