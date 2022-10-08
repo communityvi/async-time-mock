@@ -7,27 +7,28 @@ pub use instant::Instant;
 mod timeout_error;
 pub use timeout_error::TimeoutError;
 
-pub use async_time_mock_core;
+#[cfg(feature = "mock")]
+pub use async_time_mock_core as core;
 
-#[cfg(feature = "unstable")]
+#[cfg(feature = "interval")]
 mod interval;
-#[cfg(feature = "unstable")]
+#[cfg(feature = "interval")]
 pub use interval::Interval;
 
 #[derive(Clone)]
 pub enum MockableClock {
 	Real,
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(std::sync::Arc<async_time_mock_core::TimerRegistry>),
 }
 
 pub enum TimeHandlerGuard {
 	Real,
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(async_time_mock_core::TimeHandlerGuard),
 }
 
-#[cfg(test)]
+#[cfg(feature = "mock")]
 impl From<async_time_mock_core::TimeHandlerGuard> for TimeHandlerGuard {
 	fn from(guard: async_time_mock_core::TimeHandlerGuard) -> Self {
 		Self::Mock(guard)
@@ -35,7 +36,7 @@ impl From<async_time_mock_core::TimeHandlerGuard> for TimeHandlerGuard {
 }
 
 impl MockableClock {
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	pub fn mock() -> (Self, std::sync::Arc<async_time_mock_core::TimerRegistry>) {
 		let timer_registry = std::sync::Arc::new(async_time_mock_core::TimerRegistry::default());
 		(Self::Mock(timer_registry.clone()), timer_registry)
@@ -45,7 +46,7 @@ impl MockableClock {
 		use MockableClock::*;
 		match self {
 			Real => std::time::Instant::now().into(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(registry) => registry.now().into(),
 		}
 	}
@@ -57,19 +58,19 @@ impl MockableClock {
 				sleep(duration).await;
 				TimeHandlerGuard::Real
 			}
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(registry) => registry.sleep(duration).await.into(),
 		}
 	}
 
 	// AFAIK, async-std doesn't have any functionality equivalent to sleep_until
 
-	#[cfg(feature = "unstable")]
+	#[cfg(feature = "interval")]
 	pub fn interval(&self, period: Duration) -> Interval {
 		use MockableClock::*;
 		match self {
 			Real => async_std::stream::interval(period).into(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(registry) => registry.interval(period).into(),
 		}
 	}
@@ -81,7 +82,7 @@ impl MockableClock {
 		use MockableClock::*;
 		match self {
 			Real => async_std::future::timeout(duration, future).await.map_err(Into::into),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(registry) => registry.timeout(duration, future).await.map_err(Into::into),
 		}
 	}

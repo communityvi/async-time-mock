@@ -1,5 +1,4 @@
 use crate::{Instant, TimeHandlerGuard};
-use futures_core::Stream;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -7,7 +6,7 @@ use std::task::{Context, Poll};
 #[derive(Debug)]
 pub enum Timer {
 	Real(async_io::Timer),
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	MockInterval(async_time_mock_core::Interval),
 	// TODO: sleep, if we ever want to support the Timer methods below
 }
@@ -18,7 +17,7 @@ impl From<async_io::Timer> for Timer {
 	}
 }
 
-#[cfg(test)]
+#[cfg(feature = "mock")]
 impl From<async_time_mock_core::Interval> for Timer {
 	fn from(interval: async_time_mock_core::Interval) -> Self {
 		Self::MockInterval(interval)
@@ -48,7 +47,7 @@ impl Future for Timer {
 			Real(timer) => Pin::new(timer)
 				.poll(context)
 				.map(|instant| (TimeHandlerGuard::Real, instant.into())),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			MockInterval(interval) => interval
 				.poll_tick(context)
 				.map(|(guard, instant)| (guard.into(), instant.into())),
@@ -56,7 +55,8 @@ impl Future for Timer {
 	}
 }
 
-impl Stream for Timer {
+#[cfg(feature = "stream")]
+impl futures_core::Stream for Timer {
 	type Item = (TimeHandlerGuard, Instant);
 
 	fn poll_next(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<Option<Self::Item>> {
@@ -66,7 +66,7 @@ impl Stream for Timer {
 			Real(timer) => Pin::new(timer)
 				.poll_next(context)
 				.map(|option| option.map(|instant| (TimeHandlerGuard::Real, instant.into()))),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			MockInterval(interval) => interval
 				.poll_tick(context)
 				.map(|(guard, instant)| Some((guard.into(), instant.into()))),

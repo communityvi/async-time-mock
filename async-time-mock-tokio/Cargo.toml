@@ -12,9 +12,11 @@ rust-version = "1.64"
 
 
 [dependencies]
-async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core"}
+async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core", optional = true}
 tokio = {version = "1", features = ["time"]}
 futures-core = {version = "0.3", optional = true}
 
 [features]
+default = ["stream"]
+mock = ["dep:async-time-mock-core"]
 stream = ["dep:futures-core"]

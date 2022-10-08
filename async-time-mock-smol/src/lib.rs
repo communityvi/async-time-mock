@@ -6,22 +6,23 @@ pub use instant::Instant;
 mod timer;
 pub use timer::Timer;
 
-pub use async_time_mock_core;
+#[cfg(feature = "mock")]
+pub use async_time_mock_core as core;
 
 #[derive(Clone)]
 pub enum MockableClock {
 	Real,
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(std::sync::Arc<async_time_mock_core::TimerRegistry>),
 }
 
 pub enum TimeHandlerGuard {
 	Real,
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(async_time_mock_core::TimeHandlerGuard),
 }
 
-#[cfg(test)]
+#[cfg(feature = "mock")]
 impl From<async_time_mock_core::TimeHandlerGuard> for TimeHandlerGuard {
 	fn from(guard: async_time_mock_core::TimeHandlerGuard) -> Self {
 		Self::Mock(guard)
@@ -29,7 +30,7 @@ impl From<async_time_mock_core::TimeHandlerGuard> for TimeHandlerGuard {
 }
 
 impl MockableClock {
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	pub fn mock() -> (Self, std::sync::Arc<async_time_mock_core::TimerRegistry>) {
 		let timer_registry = std::sync::Arc::new(async_time_mock_core::TimerRegistry::default());
 		(Self::Mock(timer_registry.clone()), timer_registry)
@@ -39,7 +40,7 @@ impl MockableClock {
 		use MockableClock::*;
 		match self {
 			Real => std::time::Instant::now().into(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(registry) => registry.now().into(),
 		}
 	}
@@ -51,7 +52,7 @@ impl MockableClock {
 				async_io::Timer::after(duration).await;
 				TimeHandlerGuard::Real
 			}
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(registry) => registry.sleep(duration).await.into(),
 		}
 	}
@@ -62,9 +63,9 @@ impl MockableClock {
 				async_io::Timer::at(until).await;
 				TimeHandlerGuard::Real
 			}
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			(MockableClock::Mock(registry), Instant::Mock(until)) => registry.sleep_until(until).await.into(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
 		}
 	}
@@ -73,7 +74,7 @@ impl MockableClock {
 		use MockableClock::*;
 		match self {
 			Real => async_io::Timer::interval(period).into(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(registry) => registry.interval(period).into(),
 		}
 	}
@@ -81,9 +82,9 @@ impl MockableClock {
 	pub async fn interval_at(&self, start: Instant, period: Duration) -> Timer {
 		match (self, start) {
 			(MockableClock::Real, Instant::Real(start)) => async_io::Timer::interval_at(start, period).into(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			(MockableClock::Mock(registry), Instant::Mock(start)) => registry.interval_at(start, period).into(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
 		}
 	}

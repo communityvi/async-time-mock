@@ -12,7 +12,9 @@ rust-version = "1.64"
 
 [dependencies]
 async-std = "1"
-async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core"}
+async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core", optional = true}
 
 [features]
-unstable = ["async-std/unstable"]
+default = ["interval"]
+mock = ["dep:async-time-mock-core"]
+interval = ["async-std/unstable"]

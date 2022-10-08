@@ -7,7 +7,7 @@ use tokio::time::MissedTickBehavior;
 #[derive(Debug)]
 pub enum Interval {
 	Real(tokio::time::Interval),
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(async_time_mock_core::Interval),
 }
 
@@ -17,7 +17,7 @@ impl From<tokio::time::Interval> for Interval {
 	}
 }
 
-#[cfg(test)]
+#[cfg(feature = "mock")]
 impl From<async_time_mock_core::Interval> for Interval {
 	fn from(interval: async_time_mock_core::Interval) -> Self {
 		Self::Mock(interval)
@@ -32,7 +32,7 @@ impl Interval {
 				let instant = interval.tick().await;
 				(TimeHandlerGuard::Real, instant.into())
 			}
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(interval) => {
 				let (guard, instant) = interval.tick().await;
 				(guard.into(), instant.into())
@@ -46,7 +46,7 @@ impl Interval {
 			Real(interval) => interval
 				.poll_tick(context)
 				.map(|instant| (TimeHandlerGuard::Real, instant.into())),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(interval) => interval
 				.poll_tick(context)
 				.map(|(guard, instant)| (guard.into(), instant.into())),
@@ -57,7 +57,7 @@ impl Interval {
 		use Interval::*;
 		match self {
 			Real(interval) => interval.reset(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(interval) => interval.reset(),
 		}
 	}
@@ -68,7 +68,7 @@ impl Interval {
 		use Interval::*;
 		match self {
 			Real(interval) => interval.set_missed_tick_behavior(missed_tick_behavior),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(_) => {}
 		}
 	}
@@ -77,7 +77,7 @@ impl Interval {
 		use Interval::*;
 		match self {
 			Real(interval) => interval.period(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(interval) => interval.period(),
 		}
 	}
@@ -94,7 +94,7 @@ impl futures_core::stream::Stream for Interval {
 			Real(interval) => interval
 				.poll_tick(context)
 				.map(|instant| Some((TimeHandlerGuard::Real, instant.into()))),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(interval) => interval
 				.poll_tick(context)
 				.map(|(guard, instant)| Some((guard.into(), instant.into()))),

@@ -6,7 +6,7 @@ use std::fmt::{Debug, Display, Formatter};
 #[derive(Debug)]
 pub enum TimeoutError {
 	Real(async_std::future::TimeoutError),
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(async_time_mock_core::Elapsed),
 }
 
@@ -15,7 +15,7 @@ impl Display for TimeoutError {
 		use TimeoutError::*;
 		match self {
 			Real(error) => Display::fmt(error, formatter),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(elapsed) => Display::fmt(elapsed, formatter),
 		}
 	}
@@ -29,7 +29,7 @@ impl From<async_std::future::TimeoutError> for TimeoutError {
 	}
 }
 
-#[cfg(test)]
+#[cfg(feature = "mock")]
 impl From<async_time_mock_core::Elapsed> for TimeoutError {
 	fn from(elapsed: async_time_mock_core::Elapsed) -> Self {
 		Self::Mock(elapsed)

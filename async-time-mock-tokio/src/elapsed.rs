@@ -6,7 +6,7 @@ use std::fmt::{Debug, Display, Formatter};
 #[derive(Debug)]
 pub enum Elapsed {
 	Real(tokio::time::error::Elapsed),
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(async_time_mock_core::Elapsed),
 }
 
@@ -15,7 +15,7 @@ impl Display for Elapsed {
 		use Elapsed::*;
 		match self {
 			Real(error) => Display::fmt(error, formatter),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(elapsed) => Display::fmt(elapsed, formatter),
 		}
 	}
@@ -29,7 +29,7 @@ impl From<tokio::time::error::Elapsed> for Elapsed {
 	}
 }
 
-#[cfg(test)]
+#[cfg(feature = "mock")]
 impl From<async_time_mock_core::Elapsed> for Elapsed {
 	fn from(elapsed: async_time_mock_core::Elapsed) -> Self {
 		Self::Mock(elapsed)

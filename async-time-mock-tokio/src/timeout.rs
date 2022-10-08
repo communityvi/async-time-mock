@@ -6,7 +6,7 @@ use std::task::{Context, Poll};
 
 pub enum Timeout<T> {
 	Real(tokio::time::Timeout<T>),
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(async_time_mock_core::Timeout<T>),
 }
 
@@ -15,7 +15,7 @@ impl<T> Timeout<T> {
 		use Timeout::*;
 		match self {
 			Real(timeout) => timeout.get_ref(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(timeout) => timeout.get_ref(),
 		}
 	}
@@ -24,7 +24,7 @@ impl<T> Timeout<T> {
 		use Timeout::*;
 		match self {
 			Real(timeout) => timeout.get_mut(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(timeout) => timeout.get_mut(),
 		}
 	}
@@ -33,7 +33,7 @@ impl<T> Timeout<T> {
 		use Timeout::*;
 		match self {
 			Real(timeout) => timeout.into_inner(),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(timeout) => timeout.into_inner(),
 		}
 	}
@@ -44,7 +44,7 @@ impl<T: Debug> Debug for Timeout<T> {
 		use Timeout::*;
 		match self {
 			Real(timeout) => Debug::fmt(timeout, formatter),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(_) => formatter.debug_struct("Mock(Timeout)").finish(),
 		}
 	}
@@ -70,7 +70,7 @@ where
 					.poll(context)
 					.map(|result| result.map_err(Into::into))
 			}
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(timeout) => {
 				// SAFETY: `this` comes from a `self: Pin<&mut Self>` therefore `timeout` is already
 				// transitively pinned.
@@ -88,7 +88,7 @@ impl<T> From<tokio::time::Timeout<T>> for Timeout<T> {
 	}
 }
 
-#[cfg(test)]
+#[cfg(feature = "mock")]
 impl<T> From<async_time_mock_core::Timeout<T>> for Timeout<T> {
 	fn from(timeout: async_time_mock_core::Timeout<T>) -> Self {
 		Self::Mock(timeout)

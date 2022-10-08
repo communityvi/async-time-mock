@@ -6,7 +6,7 @@ use std::task::{Context, Poll};
 #[derive(Debug)]
 pub enum Interval {
 	Real(async_std::stream::Interval),
-	#[cfg(test)]
+	#[cfg(feature = "mock")]
 	Mock(async_time_mock_core::Interval),
 }
 
@@ -16,7 +16,7 @@ impl From<async_std::stream::Interval> for Interval {
 	}
 }
 
-#[cfg(test)]
+#[cfg(feature = "mock")]
 impl From<async_time_mock_core::Interval> for Interval {
 	fn from(interval: async_time_mock_core::Interval) -> Self {
 		Self::Mock(interval)
@@ -33,7 +33,7 @@ impl Stream for Interval {
 			Real(interval) => Pin::new(interval)
 				.poll_next(context)
 				.map(|option| option.map(|_| TimeHandlerGuard::Real)),
-			#[cfg(test)]
+			#[cfg(feature = "mock")]
 			Mock(interval) => interval.poll_tick(context).map(|(guard, _)| Some(guard.into())),
 		}
 	}
