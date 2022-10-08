@@ -20,3 +20,6 @@ futures-core = {version = "0.3", optional = true}
 default = ["stream"]
 mock = ["dep:async-time-mock-core"]
 stream = ["dep:futures-core"]
+
+[package.metadata.docs.rs]
+all-features = true

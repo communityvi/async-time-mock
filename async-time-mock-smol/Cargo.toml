@@ -22,3 +22,6 @@ default = ["stream"]
 # Enable mock clock
 mock = ["dep:async-time-mock-core"]
 stream = ["dep:futures-core"]
+
+[package.metadata.docs.rs]
+all-features = true
