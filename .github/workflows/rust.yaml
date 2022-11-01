@@ -14,7 +14,7 @@ jobs:
               with:
                   toolchain: stable
                   default: true
-            - uses: Swatinem/rust-cache@v1
+            - uses: Swatinem/rust-cache@v2
             - name: Check
               run: cargo check --tests
     lint:
@@ -29,7 +29,7 @@ jobs:
                   toolchain: stable
                   default: true
                   components: clippy, rustfmt
-            - uses: Swatinem/rust-cache@v1
+            - uses: Swatinem/rust-cache@v2
             - name: Check formatting
               run: cargo fmt --all -- --check
             - uses: actions-rs/clippy-check@v1
@@ -51,7 +51,7 @@ jobs:
                   toolchain: stable
                   default: true
                   components: clippy, rustfmt
-            - uses: Swatinem/rust-cache@v1
+            - uses: Swatinem/rust-cache@v2
             - name: Build
               run: cargo build
             - name: Run tests
