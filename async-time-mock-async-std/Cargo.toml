@@ -1,0 +1,23 @@
+[package]
+name = "async-time-mock-async-std"
+description = "Mockable time for use in async runtimes (async-std compatibility)."
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+authors = [
+	"Max Bruckner",
+	"Thomas Keppler",
+]
+rust-version = "1.64"
+
+[dependencies]
+async-std = "1"
+async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core", optional = true}
+
+[features]
+default = ["interval"]
+mock = ["dep:async-time-mock-core"]
+interval = ["async-std/unstable"]
+
+[package.metadata.docs.rs]
+all-features = true

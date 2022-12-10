@@ -14,9 +14,21 @@ jobs:
               with:
                   toolchain: stable
                   default: true
-            - uses: Swatinem/rust-cache@v2
-            - name: Check
+            - uses: Swatinem/rust-cache@v1
+            - name: Check all features
+              run: cargo check --tests --all-features
+            - name: Check with default features
               run: cargo check --tests
+            - name: Check without default features
+              run: cargo check --tests --no-default-features
+            - name: Check with only stream feature
+              run: cargo check --tests --no-default-features --features stream
+            - name: Check with only mock feature
+              run: cargo check --tests --no-default-features --features mock
+            - name: Check with only interval feature
+              run: cargo check --tests --no-default-features --features interval
+            - name: Check with mock and interval feature
+              run: cargo check --tests --no-default-features --features mock,interval
     lint:
         name: Lint
         runs-on: ubuntu-latest
@@ -35,7 +47,7 @@ jobs:
             - uses: actions-rs/clippy-check@v1
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
-                  args: --all-features
+                  args: --all-features --tests
     test:
         name: Test
         runs-on: ${{ matrix.os }}
@@ -53,6 +65,6 @@ jobs:
                   components: clippy, rustfmt
             - uses: Swatinem/rust-cache@v2
             - name: Build
-              run: cargo build
+              run: cargo build --all-features
             - name: Run tests
-              run: cargo test
+              run: cargo test --all-features

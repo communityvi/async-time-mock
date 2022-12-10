@@ -1,0 +1,20 @@
+[package]
+name = "async-time-mock-core"
+description = "Mockable time for use in async runtimes (core package)."
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+authors = [
+	"Max Bruckner",
+	"Thomas Keppler",
+]
+rust-version = "1.64"
+
+[dependencies]
+async-lock = "2"
+event-listener = "2"
+pin-project-lite = "0.2"
+
+[dev-dependencies]
+futures-lite = {version = "1", default-features = false}
+tokio = {version = "1", features = ["rt", "macros"]}

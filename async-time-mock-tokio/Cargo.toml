@@ -1,0 +1,26 @@
+[package]
+name = "async-time-mock-tokio"
+description = "Mockable time for use in async runtimes (tokio compatibility)."
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+authors = [
+	"Max Bruckner",
+	"Thomas Keppler",
+]
+rust-version = "1.64"
+
+
+[dependencies]
+async-time-mock-core = {version = "0.0.1", path = "../async-time-mock-core", optional = true}
+pin-project = "1"
+tokio = {version = "1", features = ["time"]}
+futures-core = {version = "0.3", optional = true}
+
+[features]
+default = ["stream"]
+mock = ["dep:async-time-mock-core"]
+stream = ["dep:futures-core"]
+
+[package.metadata.docs.rs]
+all-features = true
