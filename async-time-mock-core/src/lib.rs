@@ -1,3 +1,4 @@
+mod await_all;
 mod instant;
 mod interval;
 mod time_handler_guard;
