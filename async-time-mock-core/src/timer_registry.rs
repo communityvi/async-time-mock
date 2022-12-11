@@ -1,3 +1,4 @@
+use crate::await_all::await_all;
 use crate::time_handler_guard::TimeHandlerGuard;
 use crate::timeout::Timeout;
 use crate::timer::{Timer, TimerListener};
@@ -144,10 +145,8 @@ impl TimerRegistry {
 					_ => break,
 				}
 			};
-			for timer in timers_to_run {
-				let time_handler_finished = timer.trigger();
-				time_handler_finished.wait().await;
-			}
+
+			await_all(timers_to_run.into_iter().map(|timer| timer.trigger().wait())).await;
 		}
 
 		*self.current_time.write().expect("RwLock was poisoned") = finished_time;
