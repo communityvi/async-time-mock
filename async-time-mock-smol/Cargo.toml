@@ -17,6 +17,9 @@ async-io = "1"
 # required for the Stream trait and already a dependency of async-io
 futures-core = {version = "0.3", optional = true}
 
+[dev-dependencies]
+smol = "1"
+
 [features]
 default = ["stream"]
 # Enable mock clock
