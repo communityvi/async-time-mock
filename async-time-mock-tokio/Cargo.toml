@@ -17,6 +17,9 @@ pin-project = "1"
 tokio = {version = "1", features = ["time"]}
 futures-core = {version = "0.3", optional = true}
 
+[dev-dependencies]
+tokio = {version = "1", features = ["macros", "rt-multi-thread"]}
+
 [features]
 default = ["stream"]
 mock = ["dep:async-time-mock-core"]

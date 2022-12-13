@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 use std::future::Future;
 use std::time::Duration;
 
