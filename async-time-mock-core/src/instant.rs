@@ -1,3 +1,4 @@
+use crate::TimerRegistry;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 use std::time::Duration;
 
@@ -42,7 +43,13 @@ impl Instant {
 		self.duration.saturating_sub(earlier.duration)
 	}
 
-	// std::time::Instant::elapsed() isn't supported because it would require a TimerRegistry
+	/// Similar to [`std::time::Instant::elapsed`], but needs a [`TimerRegistry`] to calculate the time that has passed.
+	///
+	/// # Panics
+	/// If the [`TimerRegistry`] passed in was different than the one this `Instant` was created with.
+	pub fn elapsed(&self, timer_registry: &TimerRegistry) -> Duration {
+		timer_registry.now().duration_since(*self)
+	}
 
 	/// Equivalent to [`std::time::Instant::checked_add`].
 	pub const fn checked_add(&self, duration: Duration) -> Option<Self> {

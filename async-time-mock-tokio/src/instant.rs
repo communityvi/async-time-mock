@@ -1,3 +1,4 @@
+use crate::MockableClock;
 use std::cmp::Ordering;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 use std::time::Duration;
@@ -61,7 +62,16 @@ impl Instant {
 		}
 	}
 
-	// std::time::Instant::elapsed() isn't supported because it would require a TimerRegistry
+	/// Similar to [`std::time::Instant::elapsed`], but needs a [`MockableClock`] to calculate the that hat has passed
+	pub fn elapsed(&self, clock: &MockableClock) -> Duration {
+		match (self, clock) {
+			(Instant::Real(this), MockableClock::Real) => this.elapsed(),
+			#[cfg(feature = "mock")]
+			(Instant::Mock(this), MockableClock::Mock(registry)) => this.elapsed(registry),
+			#[cfg(feature = "mock")]
+			_ => panic!("Instant and MockableClock were not compatible"),
+		}
+	}
 
 	/// Equivalent to [`std::time::Instant::checked_add`].
 	pub fn checked_add(&self, duration: Duration) -> Option<Self> {
