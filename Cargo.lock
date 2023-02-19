@@ -160,7 +160,7 @@ checksum = "7a40729d2133846d9ed0ea60a8b9541bccddab49cd30f0715a1da672fe9a2524"
 
 [[package]]
 name = "async-time-mock-async-std"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "async-std",
  "async-time-mock-core",
@@ -168,7 +168,7 @@ dependencies = [
 
 [[package]]
 name = "async-time-mock-core"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "async-lock",
  "event-listener",
@@ -179,7 +179,7 @@ dependencies = [
 
 [[package]]
 name = "async-time-mock-smol"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "async-io",
  "async-time-mock-core",
@@ -189,7 +189,7 @@ dependencies = [
 
 [[package]]
 name = "async-time-mock-tokio"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "async-time-mock-core",
  "futures-core",

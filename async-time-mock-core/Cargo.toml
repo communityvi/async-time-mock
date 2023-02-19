@@ -1,7 +1,7 @@
 [package]
 name = "async-time-mock-core"
 description = "Mockable time for use in async runtimes (core package)."
-version = "0.0.1"
+version = "0.1.0"
 edition = "2021"
 license = "MIT"
 authors = [
