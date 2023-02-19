@@ -38,8 +38,8 @@ async fn main() {
 	controller.advance_time(Duration::from_secs(600)).await;
 	assert!(!HAS_SLEPT.load(Ordering::SeqCst), "Timer won't trigger after just 10 minutes.");
 
-    // advance_time will first trigger the sleep in the task above and then wait until the `_guard` was dropped.
-    // This ensures that the task had enough time to actually set `HAS_SLEPT` to `true`.
+	// advance_time will first trigger the sleep in the task above and then wait until the `_guard` was dropped.
+	// This ensures that the task had enough time to actually set `HAS_SLEPT` to `true`.
 	controller.advance_time(Duration::from_secs(3000)).await;
 	assert!(HAS_SLEPT.load(Ordering::SeqCst), "Timer has triggered after 1 hour.")
 }
