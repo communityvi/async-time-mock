@@ -87,7 +87,6 @@ async fn should_work_with_multiple_sleeps_of_same_length() {
 	let sleep_counter = Arc::new(AtomicUsize::default());
 
 	let sleep_handles = (0..10)
-		.into_iter()
 		.map(|_| {
 			let timer_registry = timer_registry.clone();
 			let sleep_counter = sleep_counter.clone();
