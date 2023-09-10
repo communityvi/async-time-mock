@@ -12,7 +12,7 @@ rust-version = "1.64"
 
 [dependencies]
 async-lock = "2"
-event-listener = "2"
+event-listener = "3"
 pin-project-lite = "0.2"
 
 [dev-dependencies]
