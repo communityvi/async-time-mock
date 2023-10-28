@@ -33,7 +33,7 @@ dependencies = [
  "async-task",
  "concurrent-queue",
  "fastrand",
- "futures-lite",
+ "futures-lite 1.13.0",
  "slab",
 ]
 
@@ -46,7 +46,7 @@ dependencies = [
  "async-lock",
  "autocfg",
  "blocking",
- "futures-lite",
+ "futures-lite 1.13.0",
 ]
 
 [[package]]
@@ -60,7 +60,7 @@ dependencies = [
  "async-io",
  "async-lock",
  "blocking",
- "futures-lite",
+ "futures-lite 1.13.0",
  "once_cell",
 ]
 
@@ -74,7 +74,7 @@ dependencies = [
  "autocfg",
  "cfg-if",
  "concurrent-queue",
- "futures-lite",
+ "futures-lite 1.13.0",
  "log",
  "parking",
  "polling",
@@ -102,7 +102,7 @@ dependencies = [
  "async-io",
  "autocfg",
  "blocking",
- "futures-lite",
+ "futures-lite 1.13.0",
 ]
 
 [[package]]
@@ -117,7 +117,7 @@ dependencies = [
  "blocking",
  "cfg-if",
  "event-listener",
- "futures-lite",
+ "futures-lite 1.13.0",
  "rustix",
  "signal-hook",
  "windows-sys",
@@ -139,7 +139,7 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-io",
- "futures-lite",
+ "futures-lite 1.13.0",
  "gloo-timers",
  "kv-log-macro",
  "log",
@@ -171,7 +171,7 @@ version = "0.1.0"
 dependencies = [
  "async-lock",
  "event-listener",
- "futures-lite",
+ "futures-lite 2.0.0",
  "pin-project-lite",
  "tokio",
 ]
@@ -225,7 +225,7 @@ dependencies = [
  "async-task",
  "atomic-waker",
  "fastrand",
- "futures-lite",
+ "futures-lite 1.13.0",
  "log",
 ]
 
@@ -345,6 +345,16 @@ dependencies = [
  "parking",
  "pin-project-lite",
  "waker-fn",
+]
+
+[[package]]
+name = "futures-lite"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c1155db57329dca6d018b61e76b1488ce9a2e5e44028cac420a5898f4fcef63"
+dependencies = [
+ "futures-core",
+ "pin-project-lite",
 ]
 
 [[package]]
@@ -584,7 +594,7 @@ dependencies = [
  "async-net",
  "async-process",
  "blocking",
- "futures-lite",
+ "futures-lite 1.13.0",
 ]
 
 [[package]]
