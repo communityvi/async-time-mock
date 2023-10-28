@@ -11,7 +11,7 @@ authors = [
 rust-version = "1.64"
 
 [dependencies]
-async-lock = "2"
+async-lock = "3"
 event-listener = "2"
 pin-project-lite = "0.2"
 
