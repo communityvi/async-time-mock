@@ -11,10 +11,10 @@ authors = [
 rust-version = "1.64"
 
 [dependencies]
-async-lock = "2"
-event-listener = "2"
+async-lock = { version = "3", default-features = false }
+event-listener = { version = "3", default-features = false }
 pin-project-lite = "0.2"
 
 [dev-dependencies]
-futures-lite = {version = "1", default-features = false}
+futures-lite = { version = "2", default-features = false }
 tokio = {version = "1", features = ["rt", "macros"]}
