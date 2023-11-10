@@ -13,7 +13,7 @@ rust-version = "1.64"
 [dependencies]
 async-time-mock-core = {version = "0.1.0", path = "../async-time-mock-core", optional = true}
 # in order to minimize the amount of dependencies pulled in, use the `async-io` library for timers, which `smol` just reexports
-async-io = "1"
+async-io = "2"
 # required for the Stream trait and already a dependency of async-io
 futures-core = {version = "0.3", optional = true}
 
