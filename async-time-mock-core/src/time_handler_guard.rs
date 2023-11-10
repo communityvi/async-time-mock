@@ -1,4 +1,5 @@
 use event_listener::{Event, EventListener};
+use std::pin::Pin;
 
 #[must_use = "TimeHandlerGuard must be kept until the timer has performed it's side-effects"]
 pub struct TimeHandlerGuard(Event);
@@ -17,7 +18,7 @@ impl Drop for TimeHandlerGuard {
 	}
 }
 
-pub(crate) struct TimeHandlerFinished(EventListener);
+pub(crate) struct TimeHandlerFinished(Pin<Box<EventListener>>);
 
 impl TimeHandlerFinished {
 	pub(crate) async fn wait(self) {

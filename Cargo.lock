@@ -232,7 +232,7 @@ name = "async-time-mock-core"
 version = "0.1.0"
 dependencies = [
  "async-lock 3.0.0",
- "event-listener 2.5.3",
+ "event-listener 3.0.1",
  "futures-lite 1.13.0",
  "pin-project-lite",
  "tokio",
