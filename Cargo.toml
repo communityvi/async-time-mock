@@ -1,2 +1,3 @@
 [workspace]
 members = ["async-time-mock*"]
+resolver = "2"

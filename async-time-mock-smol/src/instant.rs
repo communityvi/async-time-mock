@@ -95,13 +95,7 @@ impl Instant {
 
 impl PartialOrd for Instant {
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-		match (self, other) {
-			(Instant::Real(this), Instant::Real(other)) => this.partial_cmp(other),
-			#[cfg(feature = "mock")]
-			(Instant::Mock(this), Instant::Mock(other)) => this.partial_cmp(other),
-			#[cfg(feature = "mock")]
-			_ => panic!("Instants weren't compatible, both need to be either real or mocked"),
-		}
+		Some(self.cmp(other))
 	}
 }
 

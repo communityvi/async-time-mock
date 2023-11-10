@@ -1,6 +1,7 @@
 use crate::time_handler_guard::TimeHandlerFinished;
 use crate::TimeHandlerGuard;
 use event_listener::{Event, EventListener};
+use std::pin::Pin;
 
 pub(crate) struct Timer {
 	trigger: Event,
@@ -35,7 +36,7 @@ impl Timer {
 }
 
 pub(crate) struct TimerListener {
-	listener: EventListener,
+	listener: Pin<Box<EventListener>>,
 	handler_guard: TimeHandlerGuard,
 }
 

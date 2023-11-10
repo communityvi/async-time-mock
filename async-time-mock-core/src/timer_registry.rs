@@ -110,7 +110,7 @@ impl TimerRegistry {
 
 	fn schedule_timer(mut timers_by_time: RwLockWriteGuard<'_, TimersByTime>, at: Duration) -> TimerListener {
 		let (timer, listener) = Timer::new();
-		timers_by_time.entry(at).or_insert_with(VecDeque::new).push_back(timer);
+		timers_by_time.entry(at).or_default().push_back(timer);
 		listener
 	}
 
