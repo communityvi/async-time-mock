@@ -1,7 +1,7 @@
 [package]
 name = "async-time-mock-smol"
 description = "Mockable time for use in async runtimes (smol compatibility)."
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 authors = [
@@ -11,7 +11,7 @@ authors = [
 rust-version = "1.64"
 
 [dependencies]
-async-time-mock-core = {version = "0.1.0", path = "../async-time-mock-core", optional = true}
+async-time-mock-core = {version = "0.1", path = "../async-time-mock-core", optional = true}
 # in order to minimize the amount of dependencies pulled in, use the `async-io` library for timers, which `smol` just reexports
 async-io = "2"
 # required for the Stream trait and already a dependency of async-io
