@@ -229,7 +229,7 @@ dependencies = [
 
 [[package]]
 name = "async-time-mock-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "async-lock 3.0.0",
  "event-listener 3.0.1",
