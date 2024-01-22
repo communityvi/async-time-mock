@@ -1,4 +1,7 @@
 # Changelog
 
-## 0.1.0
-* Implement `elapsed` methods on all `Instant` types
+See the changelogs of the different packages:
+* [async-time-mock-core](./async-time-mock-core/CHANGELOG.md)
+* [async-time-mock-async-std](./async-time-mock-async-std/CHANGELOG.md)
+* [async-time-mock-smol](./async-time-mock-smol/CHANGELOG.md)
+* [async-time-mock-tokio](./async-time-mock-tokio/CHANGELOG.md)

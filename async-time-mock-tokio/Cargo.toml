@@ -12,7 +12,7 @@ rust-version = "1.64"
 
 
 [dependencies]
-async-time-mock-core = {version = "0.1.0", path = "../async-time-mock-core", optional = true}
+async-time-mock-core = {version = "0.1.2", path = "../async-time-mock-core", optional = true}
 pin-project = "1"
 tokio = {version = "1", features = ["time"]}
 futures-core = {version = "0.3", optional = true}
