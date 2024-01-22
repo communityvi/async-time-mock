@@ -26,6 +26,22 @@ jobs:
               run: cargo check --tests --no-default-features --features interval
             - name: Check with mock and interval feature
               run: cargo check --tests --no-default-features --features mock,interval
+
+    check-msrv:
+        name: Check with Minimum Supported Rust Version
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ ubuntu-latest, windows-latest, macos-latest ]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Install rust toolchain
+              uses: dtolnay/rust-toolchain@1.64
+            - uses: Swatinem/rust-cache@v2
+            - name: Check all features
+              run: cargo check --workspace --tests --all-features
+
     lint:
         name: Lint
         runs-on: ubuntu-latest
