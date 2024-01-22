@@ -18,7 +18,7 @@ async-io = "1"
 futures-core = {version = "0.3", optional = true}
 
 [dev-dependencies]
-smol = "1"
+smol = "2"
 
 [features]
 default = ["stream"]
