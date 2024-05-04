@@ -15,7 +15,7 @@ async-time-mock-core = {version = "0.1", path = "../async-time-mock-core", optio
 # in order to minimize the amount of dependencies pulled in, use the `async-io` library for timers, which `smol` just reexports
 async-io = "2"
 # required for the Stream trait and already a dependency of async-io
-futures-core = {version = "0.3", optional = true}
+futures-core = {version = "0.3.30", optional = true}
 
 [dev-dependencies]
 smol = "2"
