@@ -16,5 +16,5 @@ event-listener = { version = "4", default-features = false }
 pin-project-lite = "0.2"
 
 [dev-dependencies]
-futures-lite = { version = "2", default-features = false }
+futures-lite = { version = "2.3.0", default-features = false }
 tokio = {version = "1", features = ["rt", "macros"]}
