@@ -11,7 +11,7 @@ authors = [
 rust-version = "1.64"
 
 [dependencies]
-async-lock = { version = "3", default-features = false }
+async-lock = { version = "3.3.0", default-features = false }
 event-listener = { version = "4", default-features = false }
 pin-project-lite = "0.2"
 
