@@ -83,7 +83,7 @@ checksum = "05b1b633a2115cd122d73b955eadd9916c18c8f510ec9cd1686404c60ad1c29c"
 dependencies = [
  "async-channel 2.2.1",
  "async-executor",
- "async-io 2.3.2",
+ "async-io 2.3.3",
  "async-lock 3.3.0",
  "blocking",
  "futures-lite 2.3.0",
@@ -112,9 +112,9 @@ dependencies = [
 
 [[package]]
 name = "async-io"
-version = "2.3.2"
+version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcccb0f599cfa2f8ace422d3555572f47424da5648a4382a9dd0310ff8210884"
+checksum = "0d6baa8f0178795da0e71bc42c9e5d13261aac7ee549853162e66a241ba17964"
 dependencies = [
  "async-lock 3.3.0",
  "cfg-if",
@@ -155,7 +155,7 @@ version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b948000fad4873c1c9339d60f2623323a0cfd3816e5181033c6a5cb68b2accf7"
 dependencies = [
- "async-io 2.3.2",
+ "async-io 2.3.3",
  "blocking",
  "futures-lite 2.3.0",
 ]
@@ -184,7 +184,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a53fc6301894e04a92cb2584fedde80cb25ba8e02d9dc39d4a87d036e22f397d"
 dependencies = [
  "async-channel 2.2.1",
- "async-io 2.3.2",
+ "async-io 2.3.3",
  "async-lock 3.3.0",
  "async-signal",
  "async-task",
@@ -203,7 +203,7 @@ version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "afe66191c335039c7bb78f99dc7520b0cbb166b3a1cb33a03f53d8a1c6f2afda"
 dependencies = [
- "async-io 2.3.2",
+ "async-io 2.3.3",
  "async-lock 3.3.0",
  "atomic-waker",
  "cfg-if",
@@ -272,7 +272,7 @@ dependencies = [
 name = "async-time-mock-smol"
 version = "0.2.0"
 dependencies = [
- "async-io 2.3.2",
+ "async-io 2.3.3",
  "async-time-mock-core",
  "futures-core",
  "smol",
@@ -796,7 +796,7 @@ dependencies = [
  "async-channel 2.2.1",
  "async-executor",
  "async-fs",
- "async-io 2.3.2",
+ "async-io 2.3.3",
  "async-lock 3.3.0",
  "async-net",
  "async-process 2.2.2",
