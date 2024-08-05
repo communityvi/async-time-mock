@@ -8,14 +8,14 @@ authors = [
 	"Max Bruckner",
 	"Thomas Keppler",
 ]
-rust-version = "1.64"
+rust-version = "1.70"
 
 [dependencies]
 async-std = "1"
-async-time-mock-core = {version = "0.1", path = "../async-time-mock-core", optional = true}
+async-time-mock-core = { version = "0.1", path = "../async-time-mock-core", optional = true }
 
 [dev-dependencies]
-async-std = {version = "1", features = ["attributes"]}
+async-std = { version = "1", features = ["attributes"] }
 
 [features]
 default = ["interval"]
