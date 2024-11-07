@@ -70,6 +70,15 @@ jobs:
             -   name: Check formatting
                 run: cargo fmt --all -- --check
 
+    check_semver_violations:
+        name: Check semver violations
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+            -   name: Check semver
+                uses: obi1kenobi/cargo-semver-checks-action@v2
+
     test:
         name: Test
         runs-on: ${{ matrix.os }}
