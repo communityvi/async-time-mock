@@ -1,6 +1,10 @@
 use crate::time_handler_guard::TimeHandlerFinished;
 use crate::TimeHandlerGuard;
 use event_listener::{Event, EventListener};
+use pin_project_lite::pin_project;
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{ready, Context, Poll};
 
 pub(crate) struct Timer {
 	trigger: Event,
@@ -19,7 +23,7 @@ impl Timer {
 			},
 			TimerListener {
 				listener,
-				handler_guard,
+				handler_guard: Some(handler_guard),
 			},
 		)
 	}
@@ -34,20 +38,26 @@ impl Timer {
 	}
 }
 
-pub(crate) struct TimerListener {
-	listener: EventListener,
-	handler_guard: TimeHandlerGuard,
+pin_project! {
+	pub struct TimerListener {
+		#[pin]
+		listener: EventListener,
+		handler_guard: Option<TimeHandlerGuard>,
+	}
 }
 
-impl TimerListener {
-	pub(crate) async fn wait_until_triggered(self) -> TimeHandlerGuard {
-		let Self {
-			listener,
-			handler_guard,
-		} = self;
+impl Future for TimerListener {
+	type Output = TimeHandlerGuard;
 
-		listener.await;
-		handler_guard
+	fn poll(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<Self::Output> {
+		let this = self.project();
+
+		ready!(this.listener.poll(context));
+
+		match this.handler_guard.take() {
+			Some(handler_guard) => Poll::Ready(handler_guard),
+			None => Poll::Pending,
+		}
 	}
 }
 
@@ -61,15 +71,15 @@ mod test {
 	async fn timer_should_trigger_timer_listener() {
 		let (timer, listener) = Timer::new();
 
-		let mut wait_until_triggered = pin!(listener.wait_until_triggered());
+		let mut listener = pin!(listener);
 		assert!(
-			poll_once(wait_until_triggered.as_mut()).await.is_none(),
+			poll_once(listener.as_mut()).await.is_none(),
 			"Future should have been pending before the timer is triggered",
 		);
 		let _ = timer.trigger();
 
 		assert!(
-			poll_once(wait_until_triggered.as_mut()).await.is_some(),
+			poll_once(listener.as_mut()).await.is_some(),
 			"Future should have been ready after timer was triggered"
 		);
 	}
@@ -79,7 +89,7 @@ mod test {
 		let (timer, listener) = Timer::new();
 
 		let time_handler_finished = timer.trigger();
-		let time_handler_guard = listener.wait_until_triggered().await;
+		let time_handler_guard = listener.await;
 
 		let mut waiter = pin!(time_handler_finished.wait());
 		assert!(
