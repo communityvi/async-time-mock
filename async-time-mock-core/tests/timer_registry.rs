@@ -1,6 +1,6 @@
 use async_time_mock_core::TimerRegistry;
 use futures_lite::future::poll_once;
-use futures_lite::pin;
+use std::pin::pin;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
@@ -204,8 +204,7 @@ async fn should_only_advance_time_once_the_first_timer_was_scheduled() {
 	let timer_registry = Arc::new(TimerRegistry::default());
 	let start = timer_registry.now();
 
-	let advance_time_future = timer_registry.advance_time(Duration::from_secs(1));
-	pin!(advance_time_future);
+	let mut advance_time_future = pin!(timer_registry.advance_time(Duration::from_secs(1)));
 	assert!(
 		poll_once(advance_time_future.as_mut()).await.is_none(),
 		"Advance time should still be waiting for a timer to be scheduled"

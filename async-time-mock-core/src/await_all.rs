@@ -60,10 +60,9 @@ where
 mod test {
 	use crate::await_all::await_all;
 	use futures_lite::future::poll_once;
-	use futures_lite::pin;
 	use std::future;
 	use std::future::Future;
-	use std::pin::Pin;
+	use std::pin::{pin, Pin};
 
 	#[tokio::test]
 	async fn should_run_all_futures() {
@@ -77,8 +76,7 @@ mod test {
 			Box::pin(future::pending()),
 		];
 
-		let await_all = await_all(futures);
-		pin!(await_all);
+		let mut await_all = pin!(await_all(futures));
 		assert!(
 			poll_once(await_all.as_mut()).await.is_none(),
 			"Future should have been pending"
