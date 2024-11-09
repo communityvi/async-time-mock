@@ -2,16 +2,19 @@
 use std::future::Future;
 use std::time::{Duration, SystemTime};
 
+#[cfg(feature = "mock")]
+pub use async_time_mock_core as core;
+
 mod instant;
 use crate::interval::Interval;
 pub use instant::Instant;
 
-#[cfg(feature = "mock")]
-pub use async_time_mock_core as core;
-
 mod elapsed;
 mod interval;
+mod sleep;
 mod timeout;
+
+pub use sleep::Sleep;
 pub use timeout::Timeout;
 
 #[derive(Clone)]
@@ -59,26 +62,20 @@ impl MockableClock {
 		}
 	}
 
-	pub async fn sleep(&self, duration: Duration) -> TimeHandlerGuard {
+	pub fn sleep(&self, duration: Duration) -> Sleep {
 		use MockableClock::*;
 		match self {
-			Real => {
-				tokio::time::sleep(duration).await;
-				TimeHandlerGuard::Real
-			}
+			Real => tokio::time::sleep(duration).into(),
 			#[cfg(feature = "mock")]
-			Mock(registry) => registry.sleep(duration).await.into(),
+			Mock(registry) => registry.sleep(duration).into(),
 		}
 	}
 
-	pub async fn sleep_until(&self, until: Instant) -> TimeHandlerGuard {
+	pub fn sleep_until(&self, until: Instant) -> Sleep {
 		match (self, until) {
-			(MockableClock::Real, Instant::Real(until)) => {
-				tokio::time::sleep_until(until).await;
-				TimeHandlerGuard::Real
-			}
+			(MockableClock::Real, Instant::Real(until)) => tokio::time::sleep_until(until).into(),
 			#[cfg(feature = "mock")]
-			(MockableClock::Mock(registry), Instant::Mock(until)) => registry.sleep_until(until).await.into(),
+			(MockableClock::Mock(registry), Instant::Mock(until)) => registry.sleep_until(until).into(),
 			#[cfg(feature = "mock")]
 			_ => panic!("Clock and instant weren't compatible, both need to be either real or mocked"),
 		}
