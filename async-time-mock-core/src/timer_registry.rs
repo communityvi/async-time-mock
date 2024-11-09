@@ -1,5 +1,4 @@
 use crate::await_all::await_all;
-use crate::time_handler_guard::TimeHandlerGuard;
 use crate::timeout::Timeout;
 use crate::timer::{Timer, TimerListener};
 use crate::{Instant, Interval};
@@ -39,17 +38,17 @@ impl TimerRegistry {
 	/// (all sideeffects finished).
 	///
 	/// Roughly eqivalent to `async pub fn sleep(&self, duration: Duration) -> TimeHandlerGuard`.
-	pub fn sleep(&self, duration: Duration) -> impl Future<Output = TimeHandlerGuard> + Send + Sync + 'static {
+	pub fn sleep(&self, duration: Duration) -> TimerListener {
 		assert!(!duration.is_zero(), "Sleeping for zero time is not allowed");
 
-		let timer = {
+		let listener = {
 			let timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
 			let wakeup_time = *self.current_time.read().expect("RwLock was poisoned") + duration;
 			Self::schedule_timer(timers_by_time, wakeup_time)
 		};
 		self.any_timer_scheduled_signal.notify(1);
 
-		timer.wait_until_triggered()
+		listener
 	}
 
 	/// Schedules a timer to expire at "Instant", once expired, returns
@@ -60,15 +59,15 @@ impl TimerRegistry {
 	///
 	/// # Panics
 	/// When `until` was created by a different instance of `TimerRegistry`.
-	pub fn sleep_until(&self, until: Instant) -> impl Future<Output = TimeHandlerGuard> + Send + Sync + 'static {
-		let timer = {
+	pub fn sleep_until(&self, until: Instant) -> TimerListener {
+		let listener = {
 			let timers_by_time = self.timers_by_time.write().expect("RwLock was poisoned");
 			let wakeup_time = until.into_duration(self.id);
 			Self::schedule_timer(timers_by_time, wakeup_time)
 		};
 		self.any_timer_scheduled_signal.notify(1);
 
-		timer.wait_until_triggered()
+		listener
 	}
 
 	/// Combines a future with a `sleep` timer. If the future finishes before

@@ -10,4 +10,5 @@ pub use instant::Instant;
 pub use interval::Interval;
 pub use time_handler_guard::TimeHandlerGuard;
 pub use timeout::{Elapsed, Timeout};
+pub use timer::TimerListener;
 pub use timer_registry::TimerRegistry;
