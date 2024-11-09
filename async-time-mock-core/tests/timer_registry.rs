@@ -292,3 +292,30 @@ async fn sleep_until_should_resolve_after_zero_time_if_in_the_past() {
 
 	join_handle.await.expect("Sleeping task crashed");
 }
+
+#[tokio::test]
+async fn should_simulate_system_time() {
+	let timer_registry = Arc::new(TimerRegistry::default());
+
+	let initial_time = timer_registry.system_time();
+
+	let expected_duration = Duration::from_secs(10);
+
+	// schedule a timer in order for advance_time to work
+	tokio::spawn({
+		let timer_registry = timer_registry.clone();
+		async move {
+			let _ = timer_registry.sleep(expected_duration).await;
+		}
+	});
+
+	timer_registry.advance_time(expected_duration).await;
+
+	let final_time = timer_registry.system_time();
+
+	let duration = final_time.duration_since(initial_time).expect("Time went backwards");
+	assert_eq!(
+		expected_duration, duration,
+		"Should have advanced system time by the given duration"
+	);
+}

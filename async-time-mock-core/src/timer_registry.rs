@@ -9,7 +9,7 @@ use std::fmt::{Debug, Formatter};
 use std::future::Future;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 pub struct TimerRegistry {
 	id: u64,
@@ -155,6 +155,12 @@ impl TimerRegistry {
 	/// Current test time, increases on every call to [`advance_time`].
 	pub fn now(&self) -> Instant {
 		Instant::new(*self.current_time.read().expect("RwLock was poisoned"), self.id)
+	}
+
+	/// Current test time. Similar to [`now`] but simulating system time, not monotonic time.
+	/// Increases on every call to [`advance_time`].
+	pub fn system_time(&self) -> SystemTime {
+		SystemTime::UNIX_EPOCH + *self.current_time.read().expect("RwLock was poisoned")
 	}
 
 	fn next_id() -> u64 {
