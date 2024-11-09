@@ -1,5 +1,5 @@
 #![doc = include_str!("../README.md")]
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 mod instant;
 pub use instant::Instant;
@@ -43,6 +43,15 @@ impl MockableClock {
 			Real => std::time::Instant::now().into(),
 			#[cfg(feature = "mock")]
 			Mock(registry) => registry.now().into(),
+		}
+	}
+
+	pub fn system_time(&self) -> SystemTime {
+		use MockableClock::*;
+		match self {
+			Real => SystemTime::now(),
+			#[cfg(feature = "mock")]
+			Mock(registry) => registry.system_time(),
 		}
 	}
 
