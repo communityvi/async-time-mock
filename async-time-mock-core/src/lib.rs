@@ -1,6 +1,7 @@
 mod await_all;
 mod instant;
 mod interval;
+mod oneshot;
 mod time_handler_guard;
 mod timeout;
 mod timer;
