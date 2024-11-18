@@ -1,21 +1,18 @@
 use crate::time_handler_guard::TimeHandlerFinished;
-use crate::TimeHandlerGuard;
-use event_listener::{Event, EventListener};
-use pin_project_lite::pin_project;
+use crate::{oneshot, TimeHandlerGuard};
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{ready, Context, Poll};
 
 pub(crate) struct Timer {
-	trigger: Event,
+	trigger: oneshot::Sender<()>,
 	handler_finished_waiter: TimeHandlerFinished,
 }
 
 impl Timer {
 	pub(crate) fn new() -> (Self, TimerListener) {
 		let (handler_guard, handler_finished_waiter) = TimeHandlerGuard::new();
-		let trigger = Event::new();
-		let listener = trigger.listen();
+		let (trigger, listener) = oneshot::channel();
 		(
 			Self {
 				trigger,
@@ -33,26 +30,22 @@ impl Timer {
 			trigger,
 			handler_finished_waiter,
 		} = self;
-		trigger.notify(1);
+		let _ = trigger.send(());
 		handler_finished_waiter
 	}
 }
 
-pin_project! {
-	pub struct TimerListener {
-		#[pin]
-		listener: EventListener,
-		handler_guard: Option<TimeHandlerGuard>,
-	}
+pub struct TimerListener {
+	listener: oneshot::Receiver<()>,
+	handler_guard: Option<TimeHandlerGuard>,
 }
 
 impl Future for TimerListener {
 	type Output = TimeHandlerGuard;
 
 	fn poll(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<Self::Output> {
-		let this = self.project();
-
-		ready!(this.listener.poll(context));
+		let this = self.get_mut();
+		ready!(Pin::new(&mut this.listener).poll(context));
 
 		match this.handler_guard.take() {
 			Some(handler_guard) => Poll::Ready(handler_guard),

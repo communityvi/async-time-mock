@@ -1,27 +1,28 @@
-use event_listener::{Event, EventListener};
+use crate::oneshot;
 
 #[must_use = "TimeHandlerGuard must be kept until the timer has performed it's side-effects"]
-pub struct TimeHandlerGuard(Event);
+pub struct TimeHandlerGuard(Option<oneshot::Sender<()>>);
 
 impl TimeHandlerGuard {
 	pub(crate) fn new() -> (Self, TimeHandlerFinished) {
-		let event = Event::new();
-		let listener = event.listen();
-		(Self(event), TimeHandlerFinished(listener))
+		let (sender, receiver) = oneshot::channel();
+		(Self(Some(sender)), TimeHandlerFinished(receiver))
 	}
 }
 
 impl Drop for TimeHandlerGuard {
 	fn drop(&mut self) {
-		self.0.notify(1);
+		if let Some(sender) = self.0.take() {
+			let _ = sender.send(());
+		}
 	}
 }
 
-pub(crate) struct TimeHandlerFinished(EventListener);
+pub(crate) struct TimeHandlerFinished(oneshot::Receiver<()>);
 
 impl TimeHandlerFinished {
 	pub(crate) async fn wait(self) {
-		self.0.await
+		self.0.await;
 	}
 }
 
