@@ -55,14 +55,13 @@ impl TimerListener {
 mod test {
 	use super::*;
 	use futures_lite::future::poll_once;
-	use futures_lite::pin;
+	use std::pin::pin;
 
 	#[tokio::test]
 	async fn timer_should_trigger_timer_listener() {
 		let (timer, listener) = Timer::new();
 
-		let wait_until_triggered = listener.wait_until_triggered();
-		pin!(wait_until_triggered);
+		let mut wait_until_triggered = pin!(listener.wait_until_triggered());
 		assert!(
 			poll_once(wait_until_triggered.as_mut()).await.is_none(),
 			"Future should have been pending before the timer is triggered",
@@ -82,8 +81,7 @@ mod test {
 		let time_handler_finished = timer.trigger();
 		let time_handler_guard = listener.wait_until_triggered().await;
 
-		let waiter = time_handler_finished.wait();
-		pin!(waiter);
+		let mut waiter = pin!(time_handler_finished.wait());
 		assert!(
 			poll_once(waiter.as_mut()).await.is_none(),
 			"Future should have been pending before the time handler is finished (guard dropped)",
