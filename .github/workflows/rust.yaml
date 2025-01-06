@@ -5,13 +5,13 @@ env:
 jobs:
     check:
         name: Check
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4
+                uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@stable
-            -   uses: Swatinem/rust-cache@v2
+                uses: dtolnay/rust-toolchain@1.83
+            -   uses: Swatinem/rust-cache@v2.7.7
             -   name: Check all features
                 run: cargo check --tests --all-features
             -   name: Check with default features
@@ -32,65 +32,65 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                os: [ ubuntu-latest, windows-latest, macos-latest ]
+                os: [ ubuntu-24.04, windows-latest, macos-14 ]
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4
+                uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@1.70
-            -   uses: Swatinem/rust-cache@v2
+                uses: dtolnay/rust-toolchain@1.83
+            -   uses: Swatinem/rust-cache@v2.7.7
             -   name: Check all features
                 run: cargo check --workspace --tests --all-features
 
     lint:
         name: Lint
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4
+                uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@stable
+                uses: dtolnay/rust-toolchain@1.83
                 with:
                     components: clippy
-            -   uses: Swatinem/rust-cache@v2
+            -   uses: Swatinem/rust-cache@v2.7.7
             -   name: Run clippy linter
                 run: cargo clippy --all-features --tests --workspace -- -D warnings
 
     rustfmt:
         name: Check formatting with rustfmt
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4
+                uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@stable
+                uses: dtolnay/rust-toolchain@1.83
                 with:
                     components: rustfmt
-            -   uses: Swatinem/rust-cache@v2
+            -   uses: Swatinem/rust-cache@v2.7.7
             -   name: Check formatting
                 run: cargo fmt --all -- --check
 
     check_semver_violations:
         name: Check semver violations
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4
+                uses: actions/checkout@v4.2.2
             -   name: Check semver
-                uses: obi1kenobi/cargo-semver-checks-action@v2
+                uses: obi1kenobi/cargo-semver-checks-action@v2.6
 
     test:
         name: Test
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                os: [ ubuntu-latest, windows-latest, macos-latest ]
+                os: [ ubuntu-24.04, windows-2022, macos-14 ]
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4
+                uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@stable
-            -   uses: Swatinem/rust-cache@v2
+                uses: dtolnay/rust-toolchain@1.83
+            -   uses: Swatinem/rust-cache@v2.7.7
             -   name: Build
                 run: cargo build --all-features
             -   name: Run tests
