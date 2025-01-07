@@ -20,12 +20,14 @@ impl From<tokio::time::Sleep> for Sleep {
 		Self::Real(sleep)
 	}
 }
+
 #[cfg(feature = "mock")]
 impl From<TimerListener> for Sleep {
 	fn from(listener: TimerListener) -> Self {
 		Self::Mock(listener)
 	}
 }
+
 impl Future for Sleep {
 	type Output = TimeHandlerGuard;
 
