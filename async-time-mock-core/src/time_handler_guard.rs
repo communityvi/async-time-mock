@@ -1,6 +1,7 @@
 use event_listener::{Event, EventListener};
 
 #[must_use = "TimeHandlerGuard must be kept until the timer has performed it's side-effects"]
+#[derive(Debug)]
 pub struct TimeHandlerGuard(Event);
 
 impl TimeHandlerGuard {

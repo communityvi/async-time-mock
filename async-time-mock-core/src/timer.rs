@@ -39,6 +39,7 @@ impl Timer {
 }
 
 pin_project! {
+	#[derive(Debug)]
 	pub struct TimerListener {
 		#[pin]
 		listener: EventListener,
