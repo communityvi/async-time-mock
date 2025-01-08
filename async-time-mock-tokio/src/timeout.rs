@@ -52,8 +52,6 @@ impl<T: Debug> Debug for Timeout<T> {
 	}
 }
 
-// implementing `Unpin` is currently impossible because the underlying async_time_mock_core::Timeout doesn't allow it (`sleep` is an async function)
-
 impl<T> Future for Timeout<T>
 where
 	T: Future,
