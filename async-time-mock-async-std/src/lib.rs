@@ -61,15 +61,18 @@ impl MockableClock {
 		}
 	}
 
-	pub async fn sleep(&self, duration: Duration) -> TimeHandlerGuard {
-		use MockableClock::*;
-		match self {
-			Real => {
-				sleep(duration).await;
-				TimeHandlerGuard::Real
+	pub fn sleep(&self, duration: Duration) -> impl Future<Output = TimeHandlerGuard> + Send + 'static {
+		let clock = self.clone();
+		async move {
+			use MockableClock::*;
+			match clock {
+				Real => {
+					sleep(duration).await;
+					TimeHandlerGuard::Real
+				}
+				#[cfg(feature = "mock")]
+				Mock(registry) => registry.sleep(duration).await.into(),
 			}
-			#[cfg(feature = "mock")]
-			Mock(registry) => registry.sleep(duration).await.into(),
 		}
 	}
 
@@ -85,6 +88,8 @@ impl MockableClock {
 		}
 	}
 
+	// NOTE: Can't currently transform to -> impl Future because whether it needs to implement `Send` or not depends on the future
+	//       that is passed in.
 	pub async fn timeout<F, T>(&self, duration: Duration, future: F) -> Result<T, TimeoutError>
 	where
 		F: Future<Output = T>,
