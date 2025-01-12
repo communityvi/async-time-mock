@@ -37,7 +37,7 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@1.83
+                uses: dtolnay/rust-toolchain@1.70
             -   uses: Swatinem/rust-cache@v2.7.7
             -   name: Check all features
                 run: cargo check --workspace --tests --all-features
