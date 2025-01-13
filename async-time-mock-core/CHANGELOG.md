@@ -1,5 +1,14 @@
 # Changelog for async-time-mock-core
 
+# 0.1.4
+
+* Increase minimum rust version to `1.70`
+* `TimerRegistry::sleep` and `TimerRegistry::sleep_until` now return `TimerListener` as an explicit future type instead
+  of `impl Future`
+* Add `TimerRegistry::system_time` to get a mocked `SystemTime` in addition to the mocked monotonic time.
+* Derive `Debug` on `TimeHandlerGuard`
+* Replace `futures-lite::pin` with `std::pin::pin` (tests only)
+
 # 0.1.3
 
 * Update `event_listener` to `5`
