@@ -1,5 +1,8 @@
 # Changelog for async-time-mock-async-std
 
+# 0.1.3
+* Discontinued because `async-std` was discontinued. There will be no further releases
+
 # 0.1.2
 * Increase minimum rust version to `1.70`
 * Add `MockableClock::system_time` to get the current `SystemTime`.
