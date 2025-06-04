@@ -10,7 +10,7 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@1.83
+                uses: dtolnay/rust-toolchain@1.87
             -   uses: Swatinem/rust-cache@v2.7.8
             -   name: Check all features
                 run: cargo check --tests --all-features
@@ -45,7 +45,7 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@1.83
+                uses: dtolnay/rust-toolchain@1.87
                 with:
                     components: clippy
             -   uses: Swatinem/rust-cache@v2.7.8
@@ -59,7 +59,7 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@1.83
+                uses: dtolnay/rust-toolchain@1.87
                 with:
                     components: rustfmt
             -   uses: Swatinem/rust-cache@v2.7.8
@@ -85,7 +85,7 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v4.2.2
             -   name: Install rust toolchain
-                uses: dtolnay/rust-toolchain@1.83
+                uses: dtolnay/rust-toolchain@1.87
             -   uses: Swatinem/rust-cache@v2.7.8
             -   name: Build
                 run: cargo build --all-features
