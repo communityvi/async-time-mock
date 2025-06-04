@@ -1,6 +1,5 @@
 [workspace]
 members = [
-	"async-time-mock-async-std",
 	"async-time-mock-core",
 	"async-time-mock-smol",
 	"async-time-mock-tokio",

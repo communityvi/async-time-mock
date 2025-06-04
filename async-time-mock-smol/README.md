@@ -7,7 +7,7 @@ NOTE: This library is still in it's infancy, the API is still likely to change (
 ALSO NOTE: This currently implements an API that looks more like from the tokio runtime instead of smol's `Timer` API. This might change in the future.
 
 ## Cargo features
-* `mock`: Enable the mock clock. If you only enable this in tests, this library turns into a thin wrapper around async-std's time functions.
+* `mock`: Enable the mock clock. If you only enable this in tests, this library turns into a thin wrapper around smol's time functions.
 * `stream`: Implement `futures_core::stream::Stream` for `Interval`
 
 ## Example

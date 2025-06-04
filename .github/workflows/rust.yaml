@@ -22,10 +22,6 @@ jobs:
                 run: cargo check --tests --no-default-features --features stream
             -   name: Check with only mock feature
                 run: cargo check --tests --no-default-features --features mock
-            -   name: Check with only interval feature
-                run: cargo check --tests --no-default-features --features interval
-            -   name: Check with mock and interval feature
-                run: cargo check --tests --no-default-features --features mock,interval
 
     check-msrv:
         name: Check with Minimum Supported Rust Version
