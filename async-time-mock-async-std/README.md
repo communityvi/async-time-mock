@@ -1,4 +1,6 @@
-# async-time-mock-async-std
+# async-time-mock-async-std (discontinued)
+
+# NOTE: This library is discontinued because `async-std` [was discontinued](https://github.com/async-rs/async-std/releases/tag/v1.13.1). You can find [`async-time-mock-smol`](https://github.com/communityvi/async-time-mock/tree/master/async-time-mock-smol) for an implementation with the `smol` runtime instead.
 
 Asynchronous time mocking with an async-std compatible API based on [async-time-mock-core](https://github.com/communityvi/async-time-mock/tree/master/async-time-mock-core), inspired by the approach described in [Mocking Time In Async Rust](https://www.ditto.live/blog/mocking-time-in-async-rust).
 
