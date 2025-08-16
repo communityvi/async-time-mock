@@ -8,7 +8,7 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4.2.2
+                uses: actions/checkout@v5.0.0
             -   name: Install rust toolchain
                 uses: dtolnay/rust-toolchain@1.87
             -   uses: Swatinem/rust-cache@v2.8.0
@@ -31,7 +31,7 @@ jobs:
                 os: [ ubuntu-24.04, windows-latest, macos-14 ]
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4.2.2
+                uses: actions/checkout@v5.0.0
             -   name: Install rust toolchain
                 uses: dtolnay/rust-toolchain@1.70
             -   uses: Swatinem/rust-cache@v2.8.0
@@ -43,7 +43,7 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4.2.2
+                uses: actions/checkout@v5.0.0
             -   name: Install rust toolchain
                 uses: dtolnay/rust-toolchain@1.87
                 with:
@@ -57,7 +57,7 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4.2.2
+                uses: actions/checkout@v5.0.0
             -   name: Install rust toolchain
                 uses: dtolnay/rust-toolchain@1.87
                 with:
@@ -71,7 +71,7 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4.2.2
+                uses: actions/checkout@v5.0.0
             -   name: Check semver
                 uses: obi1kenobi/cargo-semver-checks-action@v2.8
 
@@ -83,7 +83,7 @@ jobs:
                 os: [ ubuntu-24.04, windows-2022, macos-14 ]
         steps:
             -   name: Checkout
-                uses: actions/checkout@v4.2.2
+                uses: actions/checkout@v5.0.0
             -   name: Install rust toolchain
                 uses: dtolnay/rust-toolchain@1.87
             -   uses: Swatinem/rust-cache@v2.8.0
