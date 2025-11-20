@@ -1,6 +1,6 @@
 # async-time-mock-tokio
 
-Asynchronous time mocking with a tokio compatible API based on [async-time-mock-core](https://github.com/communityvi/async-time-mock/tree/master/async-time-mock-core), inspired by the approach described in [Mocking Time In Async Rust](https://www.ditto.live/blog/mocking-time-in-async-rust).
+Asynchronous time mocking with a tokio compatible API based on [async-time-mock-core](https://github.com/communityvi/async-time-mock/tree/main/async-time-mock-core), inspired by the approach described in [Mocking Time In Async Rust](https://www.ditto.live/blog/mocking-time-in-async-rust).
 
 NOTE: This library is still in it's infancy, the API is still likely to change (read: improve). Please leave your feedback and suggestions on [GitHub](https://github.com/communityvi/async-time-mock).
 
