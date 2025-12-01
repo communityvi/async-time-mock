@@ -5,15 +5,14 @@ use std::time::{Duration, SystemTime};
 #[cfg(feature = "mock")]
 pub use async_time_mock_core as core;
 
-mod instant;
-use crate::interval::Interval;
-pub use instant::Instant;
-
 mod elapsed;
+mod instant;
 mod interval;
 mod sleep;
 mod timeout;
 
+pub use instant::Instant;
+pub use interval::Interval;
 pub use sleep::Sleep;
 pub use timeout::Timeout;
 
