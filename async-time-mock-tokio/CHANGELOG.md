@@ -1,5 +1,9 @@
 # Changelog for async-time-mock-tokio
 
+# 0.1.3
+* Fix missing export of the `Interval` type
+  See [#122](https://github.com/communityvi/async-time-mock/issues/122).
+
 # 0.1.2
 
 * Increase minimum rust version to `1.70`
