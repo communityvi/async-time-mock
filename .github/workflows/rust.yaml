@@ -73,7 +73,7 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v6.0.2
             -   name: Check semver
-                uses: obi1kenobi/cargo-semver-checks-action@v2.8
+                uses: obi1kenobi/cargo-semver-checks-action@v2.9
 
     test:
         name: Test
